@@ -1,43 +1,50 @@
-# TATARI Phase 3 — Supabase Authentication
+# TATARI Consulting — Website Foundation
 
-This is a static-site Phase 3 starter for the TATARI website. It includes email/password registration, sign-in, sign-out, email confirmation messaging, and password reset/update using Supabase Auth.
+A responsive, bilingual (English / Amharic) static website foundation for TATARI Consulting. It uses plain HTML, CSS and JavaScript, so there is no frontend build step and it can be deployed to Vercel as a static site.
 
-## Supabase configuration already inserted
+## Current implementation
 
-- Project URL: `https://rcloqzhlwcmmlnhmgjyc.supabase.co`
-- Browser key: Supabase publishable key supplied by the project owner.
+- Responsive corporate homepage and mobile navigation.
+- English / Amharic language switching with remembered preference.
+- Three business divisions: Consulting, Academy and Digital Store.
+- Consulting capability overview and training topic list.
+- Digital product catalogue presentation (display-only at this stage).
+- Contact and account setup placeholders clearly marked for later backend integration.
+- Basic SEO metadata and accessible navigation labels.
 
-The publishable key is intended for browser use. Never add a Supabase `service_role` or secret key to frontend files or GitHub.
+## Important current limitations
 
-## Deploy through GitHub and Vercel
+This is the first frontend implementation stage, not yet the complete online business. Customer authentication, database operations, shopping cart, payment submission, payment verification, secure downloads, course enrollment, inquiry storage and admin functions require the Supabase backend phases. No payment gateway is integrated or intended. Do not advertise products as purchasable until the backend and payment review workflow are live.
 
-1. Extract this ZIP on your computer.
-2. Open the extracted `TATARI_PHASE3_AUTH` folder.
-3. Upload the files and folders inside it to the root of a **new GitHub repository or a separate branch** first. Do not overwrite your existing live website until you have reviewed and tested this package.
-4. In Vercel, import that repository as a new project, or create a preview deployment. No build command is needed; the site is static. The output directory is the repository root.
-5. After deployment, note the exact Vercel URL.
+Contact details and the mail link are intentionally placeholders. Configure the real TATARI email and contact information before launch. Review all Amharic text and confirm product details/prices before public release.
 
-## Supabase Auth URL settings
+## Local preview
 
-In Supabase Dashboard → Authentication → URL Configuration:
+You can open `index.html` directly in a browser. For a local server, use Python:
 
-- Site URL: `https://tatari-website.vercel.app`
-- Add Redirect URL: `https://tatari-website.vercel.app/**`
-- If testing a preview deployment, add its exact URL pattern as an additional redirect URL, for example `https://your-preview-domain.vercel.app/**`.
+```bash
+python -m http.server 8000
+```
 
-Do not remove other redirect URLs that your project needs.
+Then open http://localhost:8000.
 
-## Test checklist
+## Deploy to Vercel
 
-- Register with an email address you control.
-- If email confirmation is enabled, open the confirmation email and follow its link.
-- Sign in with the same email and password.
-- Use “Forgot your password?” and follow the email link.
-- Set a new password and sign in again.
-- Sign out.
+1. Import this project folder into a Git repository or upload it through the Vercel dashboard.
+2. Choose **Other** as the framework preset.
+3. Leave Build Command empty.
+4. Set Output Directory to `.` (project root).
+5. Deploy.
 
-## Important limitations
+`vercel.json` contains the static-site configuration.
 
-This phase is authentication only. It does not yet implement the consulting inquiry backend, admin dashboard, product catalogue, order creation, manual Telebirr payment review, protected downloads, or Academy/LMS workflows. Do not accept customer payments or promise paid access until those workflows and their server-side authorization have been implemented and tested.
+## Planned next phases
 
-This package is a standalone starter and does not contain your earlier website's complete source. Merge it with the existing TATARI site only after reviewing the current repository and testing a separate deployment.
+1. Supabase project setup, schema and migrations.
+2. Authentication, roles and row-level security.
+3. Products, orders and manual Telebirr payment submissions.
+4. Admin payment verification and secure file entitlements.
+5. Academy, lessons, progress and certificates.
+6. Consulting inquiries, bookings and admin dashboard.
+
+Never commit `.env` files, database passwords, service-role keys or other secrets to source control.
