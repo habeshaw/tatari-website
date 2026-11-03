@@ -1,64 +1,117 @@
-# TATARI Phase 3 — Complete website and customer/admin workflows
+# TATARI Consulting — website + Supabase backend
 
-This package continues the TATARI Consulting website from Phases 1 and 2. It uses the existing Supabase project as the **only database** and Vercel for static hosting. It does **not** use a payment gateway. Customers pay manually through the official Telebirr account; TATARI staff independently verify the transaction and approve or reject the submission.
+This package is a deployable static website and Supabase-backed customer/admin system for the existing TATARI site. It keeps the existing project choices:
 
-## Included
+- Website hosting: existing Vercel project `tatari-website`
+- Source: existing GitHub repository connected to Vercel
+- Backend/database: existing Supabase project `rcloqzhlwcmmlnhmgjyc` (Frankfurt)
+- Payment: manual Telebirr only; there is no payment gateway or card processor
+- Currency: ETB and USD for catalog items, with the administrator responsible for entering the actual supported prices
 
-- Responsive TATARI Consulting public website (Consulting, Academy, Digital Store, About, Contact).
-- English-first interface with Amharic language switch placeholder (Amharic page translation is not yet complete).
-- Supabase email/password registration, sign-in, password reset and sign-out.
-- Live published product/course catalog and cart.
-- Secure server-side order pricing through a PostgreSQL RPC (the browser cannot set its own prices).
-- Manual Telebirr checkout, transaction reference and optional receipt upload.
-- Customer portal: order history, payment status, purchased downloads and course enrolments.
-- Admin portal: payment review, approval/rejection, product/course creation and publishing, inquiry tracking, Telebirr settings.
-- Private Supabase Storage buckets and entitlement-based download access.
-- Vercel-ready static deployment.
+The browser configuration contains the previously supplied Supabase **publishable** key. This key is designed for browser use; Row Level Security (RLS) is required. Never add a Supabase `service_role` key, secret key, database password, SMTP password or personal access token to this project or GitHub.
 
-## Free services
+## What is included
 
-The project is designed to run on free tiers: Supabase Free and Vercel Hobby. Free tiers have quotas and provider terms can change. Domain registration, email delivery beyond free quotas, and any optional paid services are not included. No payment gateway is integrated.
+### Public website content
 
-## Before deployment — one-time setup
+- TATARI brand statement: “People • Data • Technology • Growth”
+- About TATARI, Addis Ababa location, five capability areas, four published signature solutions and starting prices, delivery process, reasons to work with TATARI and target customer groups
+- English/Amharic content where available in the existing published site
+- Inquiry form that writes to Supabase
+- Digital Store and Academy catalog areas, which remain honestly empty until actual products/files, course curriculum and prices are supplied
 
-### 1. Keep your existing Supabase project
+The content and starting prices were transcribed from the existing public TATARI site on 2026-11-03. The website's previous email and telephone fields were placeholders (`name@tatariconsulting.com` and `+251 9XX XXX XXX`), so they are not presented as verified contact details or seeded into the database. No invented staff, testimonials, customers, courses, downloadable products, orders, payment records or sample transactions are added.
 
-Use the existing TATARI project (`rcloqzhlwcmmlnhmgjyc`, Frankfurt). Do not create a second database.
+### Customer features
 
-### 2. Apply the Phase 3 database migration
+- Email/password registration, sign-in and sign-out
+- Password reset email and a password-update screen after the user opens the recovery link
+- Live catalog from Supabase
+- Cart and server-priced order creation
+- Manual Telebirr payment submission with transaction reference and optional receipt evidence
+- Customer portal for order status, download entitlements and course enrolments
 
-Phase 2 already created the base schema. In Supabase:
+### Admin features
 
-1. Open **SQL Editor → New query**.
-2. Open `supabase/migrations/202611030002_phase3_functions_and_policies.sql` in this ZIP.
-3. Copy the entire file into SQL Editor and click **Run**.
-4. Confirm `Success` with no SQL errors.
+- Payment review and approve/reject workflow
+- Inquiry tracking
+- Create/publish products and courses
+- Configure official Telebirr number, account name and payment instructions
+- Admin role is assigned manually in Supabase; public visitors cannot promote themselves
 
-Do not rerun Phase 2's initial schema if it has already been applied. The Phase 3 migration adds secure order creation, private file entitlement policies, lesson progress access and payment status tracking.
+### Database content
 
-### 3. Configure the browser-safe Supabase key
+Migration `202611030003_tatari_verified_site_content.sql` creates `site_content` and `service_offerings` tables and seeds the verified public website content (five capabilities, four signature solutions, descriptions, bilingual copy where supplied, and the starting-price labels already published on the existing website). It deliberately does not seed products or courses because actual downloadable files, course curricula and confirmed catalog prices have not been supplied.
 
-1. Open `supabase-config.js`.
-2. The project URL is already filled in.
-3. Replace `PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE` with the existing **publishable key** (or legacy anon key) from Supabase → Project Settings → API / Connect.
-4. Save the file.
+## Deployment — follow in order
 
-Never paste a `service_role` key, secret key, database password or personal access token into this file or GitHub.
+### A. Download and prepare the frontend
 
-### 4. Configure Supabase Authentication URLs
+1. Extract the ZIP file on your computer.
+2. Open the `TATARI_PHASE3_COMPLETE` folder.
+3. The files `index.html`, `app.js`, `style.css`, `supabase-config.js` and `vercel.json` must be at the root of the GitHub repository. Do not upload an extra nested folder containing them.
+4. The Supabase URL and publishable key are already filled in `supabase-config.js` for the existing TATARI project. Do not replace them with a secret/service-role key.
+
+### B. Check and prepare the existing Supabase database
+
+Do not delete the existing project and do not create a second database. Open Supabase Dashboard → SQL Editor and run this diagnostic query first:
+
+```sql
+select
+  to_regclass('public.profiles') as profiles_table,
+  to_regclass('public.products') as products_table,
+  to_regprocedure('public.create_customer_order(text,jsonb,text)') as create_order_function,
+  to_regprocedure('public.review_payment(uuid,text,text)') as review_payment_function,
+  to_regclass('public.site_content') as site_content_table;
+```
+
+Interpret the results:
+
+- If `profiles_table` and `products_table` are `NULL`, the base schema is not installed. Run `supabase/migrations/202611030001_initial_schema.sql` once.
+- If the base tables already exist, **do not rerun 001**. It creates policies and triggers and is not intended as a repeat-install script.
+- If `create_order_function` is `NULL`, run `supabase/migrations/202611030002_phase3_functions_and_policies.sql` once. If the function exists, skip 002.
+- Run `supabase/migrations/202611030003_tatari_verified_site_content.sql` after the base schema. This migration is designed to be repeatable and updates the seeded public content without creating fake catalog items.
+
+Run each required SQL file separately and wait for the Supabase success message. If a script returns an error, stop and share the exact error; do not continue with later migrations blindly.
+
+### C. Configure Supabase Storage
+
+If you ran migration 001 successfully, it creates these private buckets:
+
+- `product-files`
+- `payment-evidence`
+- `course-materials`
+
+Open Supabase → Storage and confirm that all three exist and are **private**, not public. Do not upload customer payment evidence to a public bucket.
+
+### D. Configure authentication and password reset
 
 In Supabase → Authentication → URL Configuration:
 
 - Site URL: `https://tatari-website.vercel.app`
 - Redirect URL: `https://tatari-website.vercel.app/**`
 
-If testing locally, temporarily add the exact local origin you use (for example `http://localhost:5500/**`). Remove temporary URLs when no longer needed.
+Save the settings. The reset-email code redirects to the existing production website and displays a new-password form after Supabase reports the `PASSWORD_RECOVERY` event.
 
-### 5. Make your existing user an administrator
+If Supabase displays “email rate limit exceeded”, repeated reset clicks will not solve it. Wait for the limit window to pass, then configure a verified SMTP sender under Supabase → Project Settings → Authentication/SMTP (menu wording can vary). Use the SMTP credentials supplied by the email provider; never place SMTP credentials in the frontend or GitHub. Confirm the sender/domain with the provider first. Built-in email delivery may have restrictive limits.
 
-1. Register your own account on the website.
-2. In Supabase → Authentication → Users, copy your account's UUID.
-3. Run this in SQL Editor after replacing the placeholder with the UUID (not the email):
+### E. Deploy the frontend to the existing Vercel project
+
+1. Sign in to GitHub and open the repository currently connected to `https://tatari-website.vercel.app/`.
+2. Replace the old website files with the contents of the extracted `TATARI_PHASE3_COMPLETE` folder. Keep `index.html` at repository root.
+3. Commit the changes to the same deployment branch already connected to Vercel.
+4. Open Vercel → existing `tatari-website` project → Deployments.
+5. Wait until the newest deployment says **Ready**.
+6. Open `https://tatari-website.vercel.app/` in a private/incognito window and press Ctrl+Shift+R.
+
+No build command is needed. This is a static HTML/CSS/JavaScript site.
+
+### F. Create your administrator account
+
+1. Open the deployed website and register using your own email address.
+2. If email confirmation is enabled, confirm the account first.
+3. In Supabase → Authentication → Users, open your account and copy its UUID.
+4. In SQL Editor, replace the placeholder below with that UUID (not your email) and run:
 
 ```sql
 insert into public.user_roles(user_id, role)
@@ -66,75 +119,48 @@ values ('YOUR_AUTH_USER_UUID', 'admin')
 on conflict do nothing;
 ```
 
-4. Sign out and sign back in. The **My account** button will open the admin control centre.
+5. Sign out of TATARI and sign in again. Your account should now show **My account** and open the administration area.
 
-Do not give admin role to ordinary customers. Admin promotion is intentionally not available from public registration.
+Do not give the admin role to customers or unknown accounts.
 
-### 6. Configure Telebirr
+### G. Configure manual Telebirr
 
-From the admin control centre → **Settings**, enter the official Telebirr number, account name and customer instructions. Save. The checkout page displays these values.
+1. Sign in with the administrator account.
+2. Open **My account → Settings**.
+3. Enter TATARI's real official Telebirr number, account holder name and payment instructions.
+4. Save the settings.
 
-Do not accept payment screenshots as proof by themselves. Independently confirm each transaction in Telebirr before clicking **Approve**. The database approval function checks the amount and currency against the order and grants access only after approval.
+Those fields are intentionally blank until you enter the correct business payment details. Customers submit a transaction reference and may upload receipt evidence. An administrator must independently confirm the transaction in Telebirr before approving it. A screenshot alone is not proof of payment.
 
-## Deploy to the existing Vercel project
+### H. Add actual products and courses
 
-1. Extract this ZIP on your computer.
-2. Open the extracted `TATARI_PHASE3_COMPLETE` folder.
-3. Confirm `supabase-config.js` contains your Supabase URL and publishable key.
-4. Upload/replace the files in your existing GitHub repository. Keep the folder contents at the repository root (so `index.html` is at the root, not inside an extra nested folder).
-5. Commit the changes to the branch connected to your existing Vercel project.
-6. In Vercel, open the existing `tatari-website` project and wait for the deployment to finish.
-7. Open `https://tatari-website.vercel.app` in a private/incognito browser window and test the checklist below.
+The public catalog is intentionally empty until TATARI has real products and course details to publish.
 
-`vercel.json` is included. No build command or framework preset is required; this is a static HTML/CSS/JavaScript site.
+1. Open **My account → Catalog**.
+2. Add a product or course using its real title, description and confirmed ETB/USD price.
+3. Publish only when the content is ready.
+4. For downloadable products, upload the actual file to the private `product-files` bucket and register its storage path in `public.product_files` using the product UUID.
+5. For courses, add the real sections and lessons in the database and upload paid materials to the private `course-materials` bucket.
 
-## Add digital products and files
+Do not use invented demonstration prices or sample receipts for real customer transactions.
 
-1. Sign in with the administrator account and open **My account → Catalog**.
-2. Create a product or course with a unique lowercase slug.
-3. To attach a downloadable product file, open Supabase → Storage → `product-files` (private bucket). Upload the file using a path such as `product-slug/guide.pdf`.
-4. In Supabase SQL Editor, attach the file to the product using the product UUID:
+## First-use test checklist
 
-```sql
-insert into public.product_files(product_id, storage_path, file_name)
-values ('PRODUCT_UUID', 'product-slug/guide.pdf', 'guide.pdf');
-```
+- [ ] Homepage and all static TATARI content load.
+- [ ] Public capability and signature-solution content is visible.
+- [ ] `site_content` and `service_offerings` contain seeded rows in Supabase Table Editor.
+- [ ] A customer can register and sign in.
+- [ ] Password reset email arrives, opens the current site, and allows a new password to be saved.
+- [ ] Contact form inserts a row into `public.inquiries`.
+- [ ] A normal customer cannot access the admin dashboard.
+- [ ] Admin can configure Telebirr and manage inquiries.
+- [ ] After adding a real product/course, catalog and order creation work.
+- [ ] Payment approval is tested only with a real, independently verifiable test transaction.
+- [ ] Approval grants the corresponding download/course access.
 
-The customer receives a time-limited download link only after the payment is approved and entitlement is granted.
+## Important honest limitations
 
-## Add course lessons
-
-Create the course in the admin Catalog tab, then add sections and lessons from Supabase SQL Editor. Example (replace IDs and content):
-
-```sql
-insert into public.course_sections(course_id, title, position)
-values ('COURSE_UUID', 'Module 1 — Getting Started', 1)
-returning id;
-
-insert into public.lessons(section_id, title, description, video_url, position, is_preview)
-values ('SECTION_UUID', 'Introduction', 'Course introduction', 'https://your-video-link', 1, true);
-```
-
-For paid course material, upload files to the private `course-materials` bucket and set the lesson `material_path` to the exact object path. Students can read lessons after enrollment; preview lessons are visible publicly.
-
-## Test before launch
-
-- [ ] Public home page, consulting sections and catalog load.
-- [ ] Create a test customer account and confirm email if email confirmation is enabled.
-- [ ] Sign in and add a published product to cart.
-- [ ] Confirm checkout calculates price from the database, not browser input.
-- [ ] Submit a test payment using a real test transaction only; do not invent a payment receipt.
-- [ ] Verify a normal customer cannot see the admin control centre.
-- [ ] Verify the admin can inspect payment evidence and independently verify the transaction.
-- [ ] Approve a confirmed test payment and verify that download/course entitlement appears.
-- [ ] Confirm another customer cannot download the purchased file.
-- [ ] Test rejected payment and resubmission.
-- [ ] Test inquiry submission and admin status update.
-
-## Important scope and honest limitations
-
-- This package is a complete first operational Phase 3 implementation, but it cannot be connected to your Supabase/Vercel account or deployed without your explicit account-side actions.
-- The Amharic toggle is a placeholder; the current page content is English. A complete Amharic translation is a separate content pass.
-- Admin can create and publish products/courses and manage payments/inquiries. Product file attachment and course lesson authoring are currently completed through the Supabase dashboard/SQL instructions above.
-- Email delivery depends on your Supabase Auth email configuration and provider limits. Use a verified custom SMTP provider if the built-in email rate limit blocks sign-up/reset emails.
-- Do not take real customer payments until the end-to-end checklist has passed with separate test customer and admin accounts.
+- This ZIP is prepared for deployment, but I cannot sign in to your GitHub, Vercel or Supabase account or press Deploy on your behalf. Your account-side steps above are required.
+- I have checked the JavaScript syntax and ZIP structure locally; I have not authenticated against your live Supabase project, run the migrations in your database, or completed a live checkout. Do not accept real customer payments until the checklist passes.
+- Password reset still depends on Supabase email delivery, correct URL allowlisting and any configured SMTP provider. The code fixes the post-reset password-update flow; it cannot bypass provider rate limits.
+- No actual products, courses, files, contact email, telephone, staff profiles, testimonials, customer/order records or Telebirr account details were invented or preloaded.
