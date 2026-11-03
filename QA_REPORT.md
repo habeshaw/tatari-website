@@ -11,13 +11,14 @@
 - English-only source check — passed; no Amharic/Ethiopic characters, language toggle, translation script, Amharic display class, or Amharic text remains in the website HTML, CSS, or application JavaScript.
 - Authentication navigation source check — passed; signed-out state shows Login, authenticated state shows My account and Logout, and Logout calls Supabase local sign-out.
 - Catalog/admin form source check — passed; product upload form and its JavaScript selector now use the same `data-product-upload` attribute.
+- Cart interaction source update — Add to Cart now uses delegated click handling on the catalog container (so it continues working after catalog re-rendering), explicitly uses `type="button"`, validates the selected catalog item, and updates the visible cart count.
 - Supabase configuration check — passed; the existing project URL and browser-safe publishable key are retained. No service-role secret is configured in the frontend.
 - Vercel configuration JSON check — passed.
 - ZIP archive integrity check — passed (`ZipFile.testzip()` returned no errors).
 
 ## Tests not completed / live environment required
 
-A real browser session against Supabase/Vercel was not completed in this build environment. The headless Chromium process did not complete, so no browser-interaction test is claimed. The following must be tested after deployment using the real project:
+A real browser session against Supabase/Vercel was not completed in this build environment. The headless Chromium process did not complete, so no live browser-interaction test is claimed. The cart event-handling code was updated and JavaScript syntax-checked, but the deployed website must still be tested against the real browser and Supabase project. The following must be tested after deployment using the real project:
 
 - Sign-up, sign-in, session persistence, password recovery email delivery, and customer/admin logout.
 - Customer versus administrator role access and Row Level Security.
