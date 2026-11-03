@@ -16,7 +16,7 @@ The browser configuration contains the previously supplied Supabase **publishabl
 
 - TATARI brand statement: “People • Data • Technology • Growth”
 - About TATARI, Addis Ababa location, five capability areas, four published signature solutions and starting prices, delivery process, reasons to work with TATARI and target customer groups
-- English/Amharic content where available in the existing published site
+- Full bilingual public-page interface: navigation, service descriptions, solutions, Academy, delivery process, audience, inquiry form and footer switch between English and Amharic; language choice is saved in the browser and to the signed-in profile
 - Inquiry form that writes to Supabase
 - Digital Store and Academy catalog areas, which remain honestly empty until actual products/files, course curriculum and prices are supplied
 
@@ -36,12 +36,15 @@ The content and starting prices were transcribed from the existing public TATARI
 - Payment review and approve/reject workflow
 - Inquiry tracking
 - Create/publish products and courses
+- Upload private product download files from the admin catalog
+- Create course sections and lessons, add optional video links and upload private lesson materials
+- View orders and their current status
 - Configure official Telebirr number, account name and payment instructions
 - Admin role is assigned manually in Supabase; public visitors cannot promote themselves
 
 ### Database content
 
-Migration `202611030003_tatari_verified_site_content.sql` creates `site_content` and `service_offerings` tables and seeds the verified public website content (five capabilities, four signature solutions, descriptions, bilingual copy where supplied, and the starting-price labels already published on the existing website). It deliberately does not seed products or courses because actual downloadable files, course curricula and confirmed catalog prices have not been supplied.
+Migration `202611030003_tatari_verified_site_content.sql` creates `site_content` and `service_offerings` tables and seeds the verified public website content (five capabilities, four signature solutions, descriptions, bilingual copy where supplied, and the starting-price labels already published on the existing website). Migration `202611030004_bilingual_catalog.sql` adds optional Amharic fields to actual products, courses, course sections and lessons. It deliberately does not seed products or courses because actual downloadable files, course curricula and confirmed catalog prices have not been supplied.
 
 ## Deployment — follow in order
 
@@ -71,6 +74,7 @@ Interpret the results:
 - If the base tables already exist, **do not rerun 001**. It creates policies and triggers and is not intended as a repeat-install script.
 - If `create_order_function` is `NULL`, run `supabase/migrations/202611030002_phase3_functions_and_policies.sql` once. If the function exists, skip 002.
 - Run `supabase/migrations/202611030003_tatari_verified_site_content.sql` after the base schema. This migration is designed to be repeatable and updates the seeded public content without creating fake catalog items.
+- Run `supabase/migrations/202611030004_bilingual_catalog.sql` after 003. It adds optional Amharic fields to products, courses, sections and lessons; it does not create sample catalog content.
 
 Run each required SQL file separately and wait for the Supabase success message. If a script returns an error, stop and share the exact error; do not continue with later migrations blindly.
 
@@ -139,16 +143,22 @@ The public catalog is intentionally empty until TATARI has real products and cou
 1. Open **My account → Catalog**.
 2. Add a product or course using its real title, description and confirmed ETB/USD price.
 3. Publish only when the content is ready.
-4. For downloadable products, upload the actual file to the private `product-files` bucket and register its storage path in `public.product_files` using the product UUID.
-5. For courses, add the real sections and lessons in the database and upload paid materials to the private `course-materials` bucket.
+4. For downloadable products, use the **Upload product files** control under the product in the admin Catalog. It uploads to the private `product-files` bucket and records the file metadata automatically.
+5. For courses, use **Manage sections and lessons** beside the course. Add sections and lessons, enter optional video links, and upload private lesson materials through the form.
+6. Publish courses only after their real curriculum, materials and confirmed prices are complete.
 
 Do not use invented demonstration prices or sample receipts for real customer transactions.
+
+For a broader read-only verification of required tables, functions, storage buckets and RLS policies, run `supabase/diagnostics.sql` in SQL Editor. It does not modify the database.
+
+See `QA_REPORT.md` for the checks completed on this source package and the tests that still require the live Supabase/Vercel environment.
 
 ## First-use test checklist
 
 - [ ] Homepage and all static TATARI content load.
 - [ ] Public capability and signature-solution content is visible.
 - [ ] `site_content` and `service_offerings` contain seeded rows in Supabase Table Editor.
+- [ ] Migration 004 is applied; Amharic catalog and Academy fields are available.
 - [ ] A customer can register and sign in.
 - [ ] Password reset email arrives, opens the current site, and allows a new password to be saved.
 - [ ] Contact form inserts a row into `public.inquiries`.
@@ -161,6 +171,6 @@ Do not use invented demonstration prices or sample receipts for real customer tr
 ## Important honest limitations
 
 - This ZIP is prepared for deployment, but I cannot sign in to your GitHub, Vercel or Supabase account or press Deploy on your behalf. Your account-side steps above are required.
-- I have checked the JavaScript syntax and ZIP structure locally; I have not authenticated against your live Supabase project, run the migrations in your database, or completed a live checkout. Do not accept real customer payments until the checklist passes.
+- I have checked JavaScript syntax, the bilingual dictionary and package structure locally; I have not authenticated against your live Supabase project, run the migrations in your database, or completed a live checkout. Do not accept real customer payments until the checklist passes.
 - Password reset still depends on Supabase email delivery, correct URL allowlisting and any configured SMTP provider. The code fixes the post-reset password-update flow; it cannot bypass provider rate limits.
 - No actual products, courses, files, contact email, telephone, staff profiles, testimonials, customer/order records or Telebirr account details were invented or preloaded.
