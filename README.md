@@ -1,40 +1,50 @@
-# TATARI Consulting — Website
+# TATARI Consulting — Website Foundation
 
-Static, bilingual (English / Amharic) website for TATARI Consulting. No build step required — plain HTML/CSS/JS.
+A responsive, bilingual (English / Amharic) static website foundation for TATARI Consulting. It uses plain HTML, CSS and JavaScript, so there is no frontend build step and it can be deployed to Vercel as a static site.
 
-## Files
+## Current implementation
 
-- `index.html` — page markup
-- `style.css` — all styling (light/dark mode aware)
-- `script.js` — language toggle (EN/AM) + footer year
-- `vercel.json` — clean URLs config for Vercel
+- Responsive corporate homepage and mobile navigation.
+- English / Amharic language switching with remembered preference.
+- Three business divisions: Consulting, Academy and Digital Store.
+- Consulting capability overview and training topic list.
+- Digital product catalogue presentation (display-only at this stage).
+- Contact and account setup placeholders clearly marked for later backend integration.
+- Basic SEO metadata and accessible navigation labels.
+
+## Important current limitations
+
+This is the first frontend implementation stage, not yet the complete online business. Customer authentication, database operations, shopping cart, payment submission, payment verification, secure downloads, course enrollment, inquiry storage and admin functions require the Supabase backend phases. No payment gateway is integrated or intended. Do not advertise products as purchasable until the backend and payment review workflow are live.
+
+Contact details and the mail link are intentionally placeholders. Configure the real TATARI email and contact information before launch. Review all Amharic text and confirm product details/prices before public release.
+
+## Local preview
+
+You can open `index.html` directly in a browser. For a local server, use Python:
+
+```bash
+python -m http.server 8000
+```
+
+Then open http://localhost:8000.
 
 ## Deploy to Vercel
 
-**Option A — Dashboard (no install needed)**
-1. Go to vercel.com → **Add New… → Project**.
-2. Choose **Deploy without Git** / drag-and-drop, and drop this folder (or the unzipped contents) in.
-3. Framework preset: **Other** (static). Build command: none. Output directory: `/` (root).
-4. Click **Deploy** — you'll get a `*.vercel.app` URL immediately.
+1. Import this project folder into a Git repository or upload it through the Vercel dashboard.
+2. Choose **Other** as the framework preset.
+3. Leave Build Command empty.
+4. Set Output Directory to `.` (project root).
+5. Deploy.
 
-**Option B — Vercel CLI**
-```bash
-npm install -g vercel
-cd tatari-website        # this folder
-vercel                   # first deploy (follow prompts)
-vercel --prod             # promote to production
-```
+`vercel.json` contains the static-site configuration.
 
-**Option C — Git**
-Push this folder to a GitHub/GitLab/Bitbucket repo, then "Import Project" in Vercel and select it. Every push to `main` auto-deploys.
+## Planned next phases
 
-## Connect your own domain
+1. Supabase project setup, schema and migrations.
+2. Authentication, roles and row-level security.
+3. Products, orders and manual Telebirr payment submissions.
+4. Admin payment verification and secure file entitlements.
+5. Academy, lessons, progress and certificates.
+6. Consulting inquiries, bookings and admin dashboard.
 
-In the Vercel project → **Settings → Domains** → add `tatariconsulting.com` (or whatever you've registered) → follow the DNS instructions Vercel gives you (usually one CNAME or A record at your registrar).
-
-## Before going fully public
-
-- [ ] **Contact form**: it currently just shows a confirmation alert. Wire it to a form service (e.g. Formspree, Web3Forms) or your own backend so messages actually reach you — see the `<form>` in `index.html`.
-- [ ] **Real contact details**: replace the bracketed `[email]`, `[phone]`, `[LinkedIn]` placeholders in `index.html` (appears twice — English and Amharic blocks).
-- [ ] **Amharic review**: the Amharic copy is a solid first draft but hasn't been reviewed by a native speaker — worth a proofread before launch.
-- [ ] **Favicon / social preview image**: optional, but add a `favicon.ico` and Open Graph meta tags if you want a branded tab icon and link previews.
+Never commit `.env` files, database passwords, service-role keys or other secrets to source control.
