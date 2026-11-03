@@ -10,12 +10,12 @@ This package is a deployable static website and Supabase-backed customer/admin s
 
 The browser configuration contains the previously supplied Supabase **publishable** key. This key is designed for browser use; Row Level Security (RLS) is required. Never add a Supabase `service_role` key, secret key, database password, SMTP password or personal access token to this project or GitHub.
 
-## Latest navigation/authentication update
+## English-only interface and navigation/authentication
 
 - Signed-out visitors see a clearly labelled **Login** button. It opens the sign-in form, where they can also create an account or request a password reset.
 - Signed-in customers and administrators see **My account** and **Logout**. My account opens the customer portal or the administrator control centre according to the signed-in role.
 - Logout calls Supabase `auth.signOut({ scope: 'local' })`, clears the current browser session, and returns the navigation to the signed-out Login state.
-- Amharic navigation labels are supported: Login = ግባ, Logout = ውጣ.
+- The website interface is English-only. There is no language selector or translation script.
 
 This is a frontend update. It does not require a database migration and does not delete or replace any existing Supabase records. The existing project URL and browser-safe publishable key are already in `supabase-config.js`.
 
@@ -25,7 +25,7 @@ This is a frontend update. It does not require a database migration and does not
 
 - TATARI brand statement: “People • Data • Technology • Growth”
 - About TATARI, Addis Ababa location, five capability areas, four published signature solutions and starting prices, delivery process, reasons to work with TATARI and target customer groups
-- Full bilingual public-page interface: navigation, service descriptions, solutions, Academy, delivery process, audience, inquiry form and footer switch between English and Amharic; language choice is saved in the browser and to the signed-in profile
+- English-only public pages, forms, navigation, customer portal and administrator interface.
 - Inquiry form that writes to Supabase
 - Digital Store and Academy catalog areas, which remain honestly empty until actual products/files, course curriculum and prices are supplied
 
@@ -53,11 +53,11 @@ The content and starting prices were transcribed from the existing public TATARI
 
 ### Products and courses — publishing policy
 
-The four existing signature consulting solutions and the service-offering records remain part of the public TATARI offering. The Digital Store and Academy use the live Supabase catalog and include administrator forms for adding products, uploading private downloadable files, creating course sections and lessons, and publishing only when ready. No fictitious digital products, downloadable files, course curricula, testimonials, or unverified prices have been inserted. To make a digital item genuinely saleable, TATARI must provide its actual deliverable/file, bilingual title and description, and confirmed ETB/USD price before it is published.
+The four existing signature consulting solutions and the service-offering records remain part of the public TATARI offering. The Digital Store and Academy use the live Supabase catalog and include administrator forms for adding products, uploading private downloadable files, creating course sections and lessons, and publishing only when ready. No fictitious digital products, downloadable files, course curricula, testimonials, or unverified prices have been inserted. To make a digital item genuinely saleable, TATARI must provide its actual deliverable/file, English title and description, and confirmed ETB/USD price before it is published.
 
 ### Database content
 
-Migration `202611030003_tatari_verified_site_content.sql` creates `site_content` and `service_offerings` tables and seeds the verified public website content (five capabilities, four signature solutions, descriptions, bilingual copy where supplied, and the starting-price labels already published on the existing website). Migration `202611030004_bilingual_catalog.sql` adds optional Amharic fields to actual products, courses, course sections and lessons. It deliberately does not seed products or courses because actual downloadable files, course curricula and confirmed catalog prices have not been supplied.
+Migration `202611030003_tatari_verified_site_content.sql` creates `site_content` and `service_offerings` tables and seeds the verified public website content (five capabilities, four signature solutions, English descriptions and the starting-price labels already published on the existing website). The existing database may retain optional Amharic columns for compatibility, but this English-only frontend does not read, display, or write those columns. No new database migration is needed for the English-only interface.
 
 ## Deployment — follow in order
 
@@ -87,7 +87,6 @@ Interpret the results:
 - If the base tables already exist, **do not rerun 001**. It creates policies and triggers and is not intended as a repeat-install script.
 - If `create_order_function` is `NULL`, run `supabase/migrations/202611030002_phase3_functions_and_policies.sql` once. If the function exists, skip 002.
 - Run `supabase/migrations/202611030003_tatari_verified_site_content.sql` after the base schema. This migration is designed to be repeatable and updates the seeded public content without creating fake catalog items.
-- Run `supabase/migrations/202611030004_bilingual_catalog.sql` after 003. It adds optional Amharic fields to products, courses, sections and lessons; it does not create sample catalog content.
 
 Run each required SQL file separately and wait for the Supabase success message. If a script returns an error, stop and share the exact error; do not continue with later migrations blindly.
 
@@ -171,7 +170,6 @@ See `QA_REPORT.md` for the checks completed on this source package and the tests
 - [ ] Homepage and all static TATARI content load.
 - [ ] Public capability and signature-solution content is visible.
 - [ ] `site_content` and `service_offerings` contain seeded rows in Supabase Table Editor.
-- [ ] Migration 004 is applied; Amharic catalog and Academy fields are available.
 - [ ] A customer can register and sign in.
 - [ ] Password reset email arrives, opens the current site, and allows a new password to be saved.
 - [ ] Contact form inserts a row into `public.inquiries`.
@@ -184,6 +182,10 @@ See `QA_REPORT.md` for the checks completed on this source package and the tests
 ## Important honest limitations
 
 - This ZIP is prepared for deployment, but I cannot sign in to your GitHub, Vercel or Supabase account or press Deploy on your behalf. Your account-side steps above are required.
-- I have checked JavaScript syntax, the bilingual dictionary and package structure locally; I have not authenticated against your live Supabase project, run the migrations in your database, or completed a live checkout. Do not accept real customer payments until the checklist passes.
+- I have checked JavaScript syntax, English-only page structure and package integrity locally; I have not completed live authentication, database operations, or checkout against your Supabase project. Do not accept real customer payments until the checklist passes.
 - Password reset still depends on Supabase email delivery, correct URL allowlisting and any configured SMTP provider. The code fixes the post-reset password-update flow; it cannot bypass provider rate limits.
 - No actual products, courses, files, contact email, telephone, staff profiles, testimonials, customer/order records or Telebirr account details were invented or preloaded.
+
+## Release QA and limitations
+
+See `QA_REPORT.md` for the checks run on this package and the live Supabase/Vercel checks that still require the deployed environment. The original logo file was not found in the supplied package or identifiable uploaded images, so the current TATARI lettermark remains until the original asset is supplied.

@@ -1,33 +1,36 @@
-# TATARI release QA report
+# TATARI English-only release QA report
 
-## Checks completed on this package
+## Package checks completed
 
 - `node --check app.js` — passed.
-- `node --check i18n.js` — passed.
 - `node --check supabase-config.js` — passed.
-- Header navigation state is wired so signed-out users see **Login**, signed-in users see **My account** and **Logout**, and Logout invokes Supabase local sign-out.
-- English and Amharic labels are set for the header Login/Logout controls.
-- Static HTML parse — passed; all initialization IDs exist and there are no duplicate IDs.
-- English-to-Amharic static copy audit — 143 of 143 visible English text nodes have Amharic translations or are preserved brand/wordmark text.
-- Frontend/database reference audit — every referenced public table, RPC function and Storage bucket has a corresponding definition in the supplied migrations.
-- No sample products, courses, testimonials, staff, customers, orders, payments or receipts are seeded.
-- Private storage buckets are created/kept private. File upload controls use authenticated admin access; payment evidence is uploaded under the signed-in customer's UUID folder.
+- HTML parser check — passed.
+- Duplicate HTML ID check — passed.
+- Internal page-anchor check — passed; every local `#section` link has a target.
+- Local asset check — passed; every local script and stylesheet referenced by the page exists.
+- English-only source check — passed; no Amharic/Ethiopic characters, language toggle, translation script, Amharic display class, or Amharic text remains in the website HTML, CSS, or application JavaScript.
+- Authentication navigation source check — passed; signed-out state shows Login, authenticated state shows My account and Logout, and Logout calls Supabase local sign-out.
+- Catalog/admin form source check — passed; product upload form and its JavaScript selector now use the same `data-product-upload` attribute.
+- Supabase configuration check — passed; the existing project URL and browser-safe publishable key are retained. No service-role secret is configured in the frontend.
+- Vercel configuration JSON check — passed.
+- ZIP archive integrity check — passed (`ZipFile.testzip()` returned no errors).
 
-## Checks that still require your live Supabase/Vercel environment
+## Tests not completed / live environment required
 
-These cannot be truthfully marked as passed from a local source inspection:
+A real browser session against Supabase/Vercel was not completed in this build environment. The headless Chromium process did not complete, so no browser-interaction test is claimed. The following must be tested after deployment using the real project:
 
-- Supabase SQL execution against your existing project and schema compatibility.
-- Email confirmation and password-reset email delivery (including SMTP provider limits).
-- Real sign-up, sign-in, password recovery and session persistence.
-- RLS enforcement with separate customer and administrator accounts.
-- Real order creation, Telebirr submission and admin approval.
-- Storage upload/download permissions and signed download links.
-- Live production deployment and browser testing on the deployed domain.
+- Sign-up, sign-in, session persistence, password recovery email delivery, and customer/admin logout.
+- Customer versus administrator role access and Row Level Security.
+- Live inquiry inserts, order RPC, payment evidence uploads, Telebirr payment review, and download entitlements.
+- Storage policy enforcement and signed download links.
+- Production deployment and mobile/desktop browser testing.
 
-Run `supabase/diagnostics.sql` after migrations. Complete the first-use checklist in `README.md` before accepting payments or customers.
+The JavaScript syntax, page structure, links, configuration, and ZIP have been checked locally. This is not a certification that all backend features work against the live database.
 
+## Catalog policy
 
-## Product/catalog scope
+No fictitious downloadable products, course curricula, files, prices, testimonials, staff, customers, orders, payments, or receipts are seeded. The Digital Store and Academy display only published records from the connected Supabase catalog. Add actual deliverables, course materials, and confirmed prices before publishing items for sale.
 
-The product and course tables are connected to the storefront and administrator catalog workflows. They remain empty unless real product files, course materials and confirmed prices are supplied. No fictional products or deliverables are seeded.
+## Branding note
+
+The original TATARI logo image was not present in the available website ZIP or identifiable uploaded image files. The existing TATARI text/lettermark is retained rather than replacing it with an invented logo. Supply the original logo file to replace it accurately.
