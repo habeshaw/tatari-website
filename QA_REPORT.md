@@ -5,6 +5,8 @@
 - `node --check app.js` — passed.
 - `node --check i18n.js` — passed.
 - `node --check supabase-config.js` — passed.
+- Header navigation state is wired so signed-out users see **Login**, signed-in users see **My account** and **Logout**, and Logout invokes Supabase local sign-out.
+- English and Amharic labels are set for the header Login/Logout controls.
 - Static HTML parse — passed; all initialization IDs exist and there are no duplicate IDs.
 - English-to-Amharic static copy audit — 143 of 143 visible English text nodes have Amharic translations or are preserved brand/wordmark text.
 - Frontend/database reference audit — every referenced public table, RPC function and Storage bucket has a corresponding definition in the supplied migrations.
@@ -24,3 +26,8 @@ These cannot be truthfully marked as passed from a local source inspection:
 - Live production deployment and browser testing on the deployed domain.
 
 Run `supabase/diagnostics.sql` after migrations. Complete the first-use checklist in `README.md` before accepting payments or customers.
+
+
+## Product/catalog scope
+
+The product and course tables are connected to the storefront and administrator catalog workflows. They remain empty unless real product files, course materials and confirmed prices are supplied. No fictional products or deliverables are seeded.

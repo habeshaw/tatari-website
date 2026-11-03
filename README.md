@@ -10,6 +10,15 @@ This package is a deployable static website and Supabase-backed customer/admin s
 
 The browser configuration contains the previously supplied Supabase **publishable** key. This key is designed for browser use; Row Level Security (RLS) is required. Never add a Supabase `service_role` key, secret key, database password, SMTP password or personal access token to this project or GitHub.
 
+## Latest navigation/authentication update
+
+- Signed-out visitors see a clearly labelled **Login** button. It opens the sign-in form, where they can also create an account or request a password reset.
+- Signed-in customers and administrators see **My account** and **Logout**. My account opens the customer portal or the administrator control centre according to the signed-in role.
+- Logout calls Supabase `auth.signOut({ scope: 'local' })`, clears the current browser session, and returns the navigation to the signed-out Login state.
+- Amharic navigation labels are supported: Login = ግባ, Logout = ውጣ.
+
+This is a frontend update. It does not require a database migration and does not delete or replace any existing Supabase records. The existing project URL and browser-safe publishable key are already in `supabase-config.js`.
+
 ## What is included
 
 ### Public website content
@@ -41,6 +50,10 @@ The content and starting prices were transcribed from the existing public TATARI
 - View orders and their current status
 - Configure official Telebirr number, account name and payment instructions
 - Admin role is assigned manually in Supabase; public visitors cannot promote themselves
+
+### Products and courses — publishing policy
+
+The four existing signature consulting solutions and the service-offering records remain part of the public TATARI offering. The Digital Store and Academy use the live Supabase catalog and include administrator forms for adding products, uploading private downloadable files, creating course sections and lessons, and publishing only when ready. No fictitious digital products, downloadable files, course curricula, testimonials, or unverified prices have been inserted. To make a digital item genuinely saleable, TATARI must provide its actual deliverable/file, bilingual title and description, and confirmed ETB/USD price before it is published.
 
 ### Database content
 

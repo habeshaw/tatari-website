@@ -1,7 +1,7 @@
 /* TATARI bilingual interface dictionary. English remains the source language. */
 (() => {
   const am = {
-    'Open menu':'ምናሌ ክፈት','About':'ስለ እኛ','Services':'አገልግሎቶች','Solutions':'መፍትሄዎች','Academy':'አካዳሚ','Digital Store':'ዲጂታል መደብር','Contact':'ያግኙን','Search products and courses...':'ምርቶችንና ኮርሶችን ይፈልጉ...','Sign in':'ግባ','My account':'የእኔ መለያ',
+    'Open menu':'ምናሌ ክፈት','About':'ስለ እኛ','Services':'አገልግሎቶች','Solutions':'መፍትሄዎች','Academy':'አካዳሚ','Digital Store':'ዲጂታል መደብር','Contact':'ያግኙን','Search products and courses...':'ምርቶችንና ኮርሶችን ይፈልጉ...','Sign in':'ግባ','Login':'ግባ','Logout':'ውጣ','Log out':'ውጣ','My account':'የእኔ መለያ',
     'PRACTICAL CONSULTING · ANALYTICS · LEARNING':'ተግባራዊ ምክር · ትንተና · ትምህርት','We help Ethiopian organizations improve people management, automate reporting, and make confident, data-driven decisions — practical consulting and training, without the cost of a large firm.':'የኢትዮጵያ ድርጅቶች የሰራተኛ አያያዝን እንዲያሻሽሉ፣ ሪፖርት ማዘጋጀትን በራስ-ሰር እንዲያከናውኑ እና በመረጃ ላይ የተመሰረተ ውሳኔ በልበ ሙሉነት እንዲወስኑ በተግባራዊ ምክርና ስልጠና እንረዳለን።','People. Data. Technology.':'ሰዎች። ውሂብ። ቴክኖሎጂ።','Growth.':'እድገት።',
     'Book a free sample dashboard ↗':'ነፃ የዳሽቦርድ ናሙና ይጠይቁ ↗','Explore services':'አገልግሎቶቻችንን ይመልከቱ','Addis Ababa, Ethiopia · Serving organizations and professionals.':'አዲስ አበባ፣ ኢትዮጵያ · ለድርጅቶችና ባለሙያዎች እናገለግላለን።',
     'Insight → Action':'ግንዛቤ → ተግባር','Practical outcomes that matter.':'ተግባራዊና ጠቃሚ ውጤቶች።','ABOUT TATARI':'ስለ ታታሪ','Practical expertise.':'ተግባራዊ ባለሙያነት።','Measurable progress.':'የሚለካ እድገት።',
