@@ -1,37 +1,25 @@
-# TATARI English-only release QA report
+# TATARI customer checkout follow-up QA report
 
-## Package checks completed
+## Source-level fixes in this package
+
+- Cart contents are saved in browser localStorage and restored after a page reload.
+- Cart quantity is refreshed after add, remove, and quantity changes.
+- Checkout rechecks the current Supabase authentication session before attempting order creation.
+- If sign-in is required during checkout, the customer cart is retained and the cart modal reopens after successful sign-in.
+- After a successful order RPC, the cart is cleared from browser storage.
+- Existing Supabase project URL and browser-safe publishable key are retained. No service-role key is included.
+- Existing database migrations are included as reference only; this follow-up package does not require rerunning them.
+
+## Local checks completed
 
 - `node --check app.js` — passed.
 - `node --check supabase-config.js` — passed.
-- HTML parser check — passed.
-- Duplicate HTML ID check — passed.
-- Internal page-anchor check — passed; every local `#section` link has a target.
-- Local asset check — passed; every local script and stylesheet referenced by the page exists.
-- English-only source check — passed; no Amharic/Ethiopic characters, language toggle, translation script, Amharic display class, or Amharic text remains in the website HTML, CSS, or application JavaScript.
-- Authentication navigation source check — passed; signed-out state shows Login, authenticated state shows My account and Logout, and Logout calls Supabase local sign-out.
-- Catalog/admin form source check — passed; product upload form and its JavaScript selector now use the same `data-product-upload` attribute.
-- Cart interaction source update — Add to Cart now uses delegated click handling on the catalog container (so it continues working after catalog re-rendering), explicitly uses `type="button"`, validates the selected catalog item, and updates the visible cart count.
-- Supabase configuration check — passed; the existing project URL and browser-safe publishable key are retained. No service-role secret is configured in the frontend.
-- Vercel configuration JSON check — passed.
-- ZIP archive integrity check — passed (`ZipFile.testzip()` returned no errors).
+- ZIP archive integrity — passed.
 
-## Tests not completed / live environment required
+## Live checks not completed
 
-A real browser session against Supabase/Vercel was not completed in this build environment. The headless Chromium process did not complete, so no live browser-interaction test is claimed. The cart event-handling code was updated and JavaScript syntax-checked, but the deployed website must still be tested against the real browser and Supabase project. The following must be tested after deployment using the real project:
+The build environment could not resolve the live Vercel hostname, so the deployed website and Supabase backend could not be reached from this session. Therefore the following remain unverified: real customer sign-in/session persistence, order RPC execution, payment submission and receipt upload, admin approval, storage permissions, and download entitlement creation. These must be tested in the live site before accepting real customer payments.
 
-- Sign-up, sign-in, session persistence, password recovery email delivery, and customer/admin logout.
-- Customer versus administrator role access and Row Level Security.
-- Live inquiry inserts, order RPC, payment evidence uploads, Telebirr payment review, and download entitlements.
-- Storage policy enforcement and signed download links.
-- Production deployment and mobile/desktop browser testing.
+## Database safety
 
-The JavaScript syntax, page structure, links, configuration, and ZIP have been checked locally. This is not a certification that all backend features work against the live database.
-
-## Catalog policy
-
-No fictitious downloadable products, course curricula, files, prices, testimonials, staff, customers, orders, payments, or receipts are seeded. The Digital Store and Academy display only published records from the connected Supabase catalog. Add actual deliverables, course materials, and confirmed prices before publishing items for sale.
-
-## Branding note
-
-The original TATARI logo image was not present in the available website ZIP or identifiable uploaded image files. The existing TATARI text/lettermark is retained rather than replacing it with an invented logo. Supply the original logo file to replace it accurately.
+Do not drop tables, recreate the Supabase project, or rerun the bundled initial-schema/site-content migrations on an already configured database. The existing database and its records must be preserved. This package contains frontend changes only for cart/session continuity; it does not apply SQL changes.
