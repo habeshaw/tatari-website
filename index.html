@@ -4,10 +4,10 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <meta content="#10243b" name="theme-color"/>
-<meta content="TATARI Consulting — Global Job Search Engine & Digital Learning Hub in Ethiopia." name="description"/>
-<title>TATARI — Global Job Search Engine & Digital Learning Hub</title>
+<meta content="TATARI Consulting — Bilingual Job Portal & Digital Learning Marketplace in Ethiopia." name="description"/>
+<title data-i18n="page_title">TATARI — Global Job Search Engine & Digital Learning Hub</title>
 <link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+Ethiopic:wght@400;500;700&display=swap" rel="stylesheet"/>
 <link href="style.css" rel="stylesheet"/>
 <script onerror="this.onerror=null;this.src='https://unpkg.com/@supabase/supabase-js@2'" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -16,20 +16,20 @@
   <a class="brand" href="#home"><span class="brand-icon">T</span><span><b>TATARI</b><small>CONSULTING</small></span></a>
   <button aria-label="Open menu" class="mobile-menu" id="mobileMenu" type="button">☰</button>
   <nav id="nav">
-    <a href="#home">Home</a>
-    <a href="#search-engine">Job Search Engine</a>
-    <a href="#testimonials-section">Testimonials</a>
-    <a href="#plans-pricing">Subscription Plans</a>
-    <a href="#contact">Contact</a>
+    <a href="#home" data-i18n="nav_home">Home</a>
+    <a href="#search-engine" data-i18n="nav_search">Job Search Engine</a>
+    <a href="#testimonials-section" data-i18n="nav_testimonials">Testimonials</a>
+    <a href="#plans-pricing" data-i18n="nav_plans">Subscription Plans</a>
+    <a href="#contact" data-i18n="nav_contact">Contact</a>
   </nav>
   <div class="head-actions">
     <div class="lang-switch">
       <button class="lang-btn active" id="langEN" type="button">EN</button>
       <button class="lang-btn" id="langAM" type="button">አማ</button>
     </div>
-    <button aria-label="Login" class="btn btn-outline btn-small" id="accountBtn" type="button">Login</button>
-    <button class="btn btn-primary btn-small" hidden="" id="dashboardBtn" type="button">My account</button>
-    <button aria-label="Logout" class="btn btn-outline btn-small" hidden="" id="logoutBtn" type="button">Logout</button>
+    <button aria-label="Login" class="btn btn-outline btn-small" id="accountBtn" type="button" data-i18n="btn_login">Login</button>
+    <button class="btn btn-primary btn-small" hidden="" id="dashboardBtn" type="button" data-i18n="btn_dashboard">My account</button>
+    <button aria-label="Logout" class="btn btn-outline btn-small" hidden="" id="logoutBtn" type="button" data-i18n="btn_logout">Logout</button>
   </div>
 </header>
 
@@ -37,20 +37,20 @@
   <!-- Hero Section -->
   <section class="hero" id="home">
     <div class="hero-copy">
-      <span class="eyebrow">STANDARDIZED JOB SEARCH ENGINE · FREELANCE HUB · SUBSCRIPTIONS</span>
-      <h1>People. Data. Technology.<br/><em>Growth.</em></h1>
-      <p>Search corporate career jobs, freelance project contracts, and digital learning tools with granular location, salary, and title filters.</p>
+      <span class="eyebrow" data-i18n="hero_eyebrow">STANDARDIZED JOB SEARCH ENGINE · FREELANCE HUB · SUBSCRIPTIONS</span>
+      <h1 data-i18n="hero_title">People. Data. Technology.<br/><em>Growth.</em></h1>
+      <p data-i18n="hero_desc">Search corporate career jobs, freelance project contracts, and digital learning tools with granular location, salary, and title filters.</p>
       <div class="hero-ctas">
-        <a class="btn btn-primary" href="#search-engine">Explore Search Engine ↗</a>
-        <a class="btn btn-ghost" href="#plans-pricing">Employer Plans</a>
+        <a class="btn btn-primary" href="#search-engine" data-i18n="hero_cta1">Explore Search Engine ↗</a>
+        <a class="btn btn-ghost" href="#plans-pricing" data-i18n="hero_cta2">Employer Plans</a>
       </div>
-      <div class="hero-proof"><span>✦</span> Addis Ababa, Ethiopia · Integrated role management for Admins, Employers & Job Seekers.</div>
+      <div class="hero-proof"><span data-i18n="hero_proof_star">✦</span> <span data-i18n="hero_proof_text">Addis Ababa, Ethiopia · Integrated role management for Admins, Employers & Job Seekers.</span></div>
     </div>
     <div class="hero-visual">
       <div class="visual-ring ring1"></div>
       <div class="visual-ring ring2"></div>
       <div class="visual-center">T</div>
-      <span class="orbit-tag tag1">CAREERS</span><span class="orbit-tag tag2">LOGOS</span><span class="orbit-tag tag3">EXPORT CSV</span><span class="orbit-tag tag4">SUBSCRIPTIONS</span>
+      <span class="orbit-tag tag1" data-i18n="tag_careers">CAREERS</span><span class="orbit-tag tag2" data-i18n="tag_logos">LOGOS</span><span class="orbit-tag tag3" data-i18n="tag_export">EXPORT CSV</span><span class="orbit-tag tag4" data-i18n="tag_subs">SUBSCRIPTIONS</span>
     </div>
   </section>
 
@@ -58,55 +58,55 @@
   <section class="section search-engine-section" id="search-engine">
     <div class="section-head">
       <div>
-        <div class="section-label">SELECTABLE DISCOVERY ENGINE</div>
-        <h2>Global Job & Freelance <em>Search Engine</em></h2>
+        <div class="section-label" data-i18n="search_eyebrow">SELECTABLE DISCOVERY ENGINE</div>
+        <h2 data-i18n="search_title">Global Job & Freelance <em>Search Engine</em></h2>
       </div>
       <div class="head-btn-group">
-        <button class="btn btn-primary btn-small" id="postListingBtn" type="button">+ Post New Vacancy / Project</button>
+        <button class="btn btn-primary btn-small" id="postListingBtn" type="button" data-i18n="btn_post_vacancy">+ Post New Vacancy / Project</button>
       </div>
     </div>
 
     <!-- Selectable Module Filter Tabs -->
     <div class="module-select-tabs" id="moduleSelectTabs">
-      <button class="tab-btn active" data-module="all" type="button">🔍 All Opportunities</button>
-      <button class="tab-btn" data-module="career" type="button">🏢 Full-Time & Career Jobs</button>
-      <button class="tab-btn" data-module="freelance" type="button">💼 Freelance Projects</button>
-      <button class="tab-btn" data-module="store" type="button">✦ Digital Store & Courses</button>
+      <button class="tab-btn active" data-module="all" type="button" data-i18n="tab_all">🔍 All Opportunities</button>
+      <button class="tab-btn" data-module="career" type="button" data-i18n="tab_career">🏢 Full-Time & Career Jobs</button>
+      <button class="tab-btn" data-module="freelance" type="button" data-i18n="tab_freelance">💼 Freelance Projects</button>
+      <button class="tab-btn" data-module="store" type="button" data-i18n="tab_store">✦ Digital Store & Courses</button>
     </div>
 
     <!-- Granular Filters -->
     <div class="search-filter-box">
       <div class="filter-grid">
         <div class="field">
-          <label for="filterKeyword">Job Title / Keyword</label>
-          <input id="filterKeyword" placeholder="e.g. HR Manager, Python Developer, Accountant..."/>
+          <label for="filterKeyword" data-i18n="lbl_keyword">Job Title / Keyword</label>
+          <input id="filterKeyword" data-i18n-placeholder="ph_keyword" placeholder="e.g. HR Manager, Python Developer, Accountant..."/>
         </div>
         <div class="field">
-          <label for="filterLocation">Location</label>
-          <input id="filterLocation" placeholder="e.g. Addis Ababa, Remote, Hawassa..."/>
+          <label for="filterLocation" data-i18n="lbl_location">Location</label>
+          <input id="filterLocation" data-i18n-placeholder="ph_location" placeholder="e.g. Addis Ababa, Remote, Hawassa..."/>
         </div>
         <div class="field">
-          <label for="filterSalary">Minimum Salary / Budget (ETB)</label>
-          <input id="filterSalary" min="0" placeholder="e.g. 20000" type="number"/>
+          <label for="filterSalary" data-i18n="lbl_salary">Minimum Salary / Budget (ETB)</label>
+          <input id="filterSalary" min="0" data-i18n-placeholder="ph_salary" placeholder="e.g. 20000" type="number"/>
         </div>
         <div class="field">
-          <label for="filterCategory">Category / Sector</label>
+          <label for="filterCategory" data-i18n="lbl_category">Category / Sector</label>
           <select id="filterCategory">
-            <option value="all">All Sectors</option>
-            <option value="HR & Analytics">HR & Analytics</option>
-            <option value="Software & Tech">Software & Tech</option>
-            <option value="Finance & Management">Finance & Management</option>
-            <option value="Design & Creative">Design & Creative</option>
+            <option value="all" data-i18n="opt_all_sectors">All Sectors</option>
+            <option value="HR & Analytics" data-i18n="opt_hr">HR & Analytics</option>
+            <option value="Software & Tech" data-i18n="opt_tech">Software & Tech</option>
+            <option value="Finance & Management" data-i18n="opt_finance">Finance & Management</option>
+            <option value="Design & Creative" data-i18n="opt_design">Design & Creative</option>
           </select>
         </div>
         <div class="field">
-          <label for="filterWorkType">Work Type</label>
+          <label for="filterWorkType" data-i18n="lbl_worktype">Work Type</label>
           <select id="filterWorkType">
-            <option value="all">All Work Types</option>
-            <option value="Full-Time">Full-Time</option>
-            <option value="Remote">Remote</option>
-            <option value="Hybrid">Hybrid</option>
-            <option value="Contract">Contract / Project</option>
+            <option value="all" data-i18n="opt_all_types">All Work Types</option>
+            <option value="Full-Time" data-i18n="opt_fulltime">Full-Time</option>
+            <option value="Remote" data-i18n="opt_remote">Remote</option>
+            <option value="Hybrid" data-i18n="opt_hybrid">Hybrid</option>
+            <option value="Contract" data-i18n="opt_contract">Contract / Project</option>
           </select>
         </div>
       </div>
@@ -114,7 +114,7 @@
 
     <!-- Filtered Results Grid -->
     <div class="catalog-grid" id="searchResultsGrid">
-      <div class="empty-note">Loading opportunities...</div>
+      <div class="empty-note" data-i18n="loading_opportunities">Loading opportunities...</div>
     </div>
   </section>
 
@@ -122,49 +122,49 @@
   <section class="section pricing-section" id="plans-pricing">
     <div class="section-head">
       <div>
-        <div class="section-label">SUBSCRIPTION TIERS</div>
-        <h2>Employer <em>Posting Packages</em></h2>
+        <div class="section-label" data-i18n="pricing_eyebrow">SUBSCRIPTION TIERS</div>
+        <h2 data-i18n="pricing_title">Employer <em>Posting Packages</em></h2>
       </div>
-      <p>Choose an employer package to publish vacancies with company logo branding and top search placement.</p>
+      <p data-i18n="pricing_subtitle">Choose an employer package to publish vacancies with company logo branding and top search placement.</p>
     </div>
     <div class="pricing-grid">
       <div class="pricing-card">
-        <span class="pill">FREE STARTER</span>
-        <h3>Starter Employer</h3>
-        <p>Basic tier for single job vacancies.</p>
-        <div class="price">ETB 0 <span>/ month</span></div>
+        <span class="pill" data-i18n="plan1_pill">FREE STARTER</span>
+        <h3 data-i18n="plan1_title">Starter Employer</h3>
+        <p data-i18n="plan1_desc">Basic tier for single job vacancies.</p>
+        <div class="price">ETB 0 <span data-i18n="per_month">/ month</span></div>
         <ul>
-          <li>✓ 1 Active Vacancy Listing</li>
-          <li>✓ Basic Candidate Tracker</li>
-          <li>✕ Logo Upload Branding</li>
+          <li data-i18n="plan1_f1">✓ 1 Active Vacancy Listing</li>
+          <li data-i18n="plan1_f2">✓ Basic Candidate Tracker</li>
+          <li data-i18n="plan1_f3">✕ Logo Upload Branding</li>
         </ul>
-        <button class="btn btn-outline full-btn" data-plan-modal="starter" type="button">View Details & Subscribe</button>
+        <button class="btn btn-outline full-btn" data-plan-modal="starter" type="button" data-i18n="btn_sub_details">View Details & Subscribe</button>
       </div>
       <div class="pricing-card featured">
-        <span class="pill">MOST POPULAR</span>
-        <h3>Pro Employer</h3>
-        <p>For growing organizations and recruitment agencies.</p>
-        <div class="price">ETB 4,500 <span>/ month</span></div>
+        <span class="pill" data-i18n="plan2_pill">MOST POPULAR</span>
+        <h3 data-i18n="plan2_title">Pro Employer</h3>
+        <p data-i18n="plan2_desc">For growing organizations and recruitment agencies.</p>
+        <div class="price">ETB 4,500 <span data-i18n="per_month">/ month</span></div>
         <ul>
-          <li>✓ 10 Active Job & Freelance Vacancies</li>
-          <li>✓ Company Logo Branding Uploads</li>
-          <li>✓ High-Priority Search Placement</li>
-          <li>✓ Candidate CV Export Tools</li>
+          <li data-i18n="plan2_f1">✓ 10 Active Job & Freelance Vacancies</li>
+          <li data-i18n="plan2_f2">✓ Company Logo Branding Uploads</li>
+          <li data-i18n="plan2_f3">✓ High-Priority Search Placement</li>
+          <li data-i18n="plan2_f4">✓ Candidate CV Export Tools</li>
         </ul>
-        <button class="btn btn-primary full-btn" data-plan-modal="pro" type="button">View Details & Subscribe</button>
+        <button class="btn btn-primary full-btn" data-plan-modal="pro" type="button" data-i18n="btn_sub_details">View Details & Subscribe</button>
       </div>
       <div class="pricing-card">
-        <span class="pill">ENTERPRISE</span>
-        <h3>Corporate Unlimited</h3>
-        <p>Unlimited recruitment for large enterprises.</p>
-        <div class="price">ETB 12,000 <span>/ month</span></div>
+        <span class="pill" data-i18n="plan3_pill">ENTERPRISE</span>
+        <h3 data-i18n="plan3_title">Corporate Unlimited</h3>
+        <p data-i18n="plan3_desc">Unlimited recruitment for large enterprises.</p>
+        <div class="price">ETB 12,000 <span data-i18n="per_month">/ month</span></div>
         <ul>
-          <li>✓ Unlimited Vacancies & Freelance Contracts</li>
-          <li>✓ Company Logo & Testimonial Banners</li>
-          <li>✓ Dedicated Account Management</li>
-          <li>✓ Admin Priority Direct Approval</li>
+          <li data-i18n="plan3_f1">✓ Unlimited Vacancies & Freelance Contracts</li>
+          <li data-i18n="plan3_f2">✓ Company Logo & Testimonial Banners</li>
+          <li data-i18n="plan3_f3">✓ Dedicated Account Management</li>
+          <li data-i18n="plan3_f4">✓ Admin Priority Direct Approval</li>
         </ul>
-        <button class="btn btn-outline full-btn" data-plan-modal="enterprise" type="button">View Details & Subscribe</button>
+        <button class="btn btn-outline full-btn" data-plan-modal="enterprise" type="button" data-i18n="btn_sub_details">View Details & Subscribe</button>
       </div>
     </div>
   </section>
@@ -173,40 +173,40 @@
   <section class="section testimonials-strip" id="testimonials-section">
     <div class="section-head">
       <div>
-        <div class="section-label">SUCCESS STORIES</div>
-        <h2>Client & Partner <em>Testimonials</em></h2>
+        <div class="section-label" data-i18n="testi_eyebrow">SUCCESS STORIES</div>
+        <h2 data-i18n="testi_title">Client & Partner <em>Testimonials</em></h2>
       </div>
-      <button class="btn btn-outline btn-small" id="addTestimonialBtn" type="button">+ Add Testimonial</button>
+      <button class="btn btn-outline btn-small" id="addTestimonialBtn" type="button" data-i18n="btn_add_testimonial">+ Add Testimonial</button>
     </div>
     <div class="testimonial-banner-grid" id="testimonialBannerList">
-      <div class="empty-note">Loading client & partner testimonials...</div>
+      <div class="empty-note" data-i18n="loading_testimonials">Loading client & partner testimonials...</div>
     </div>
   </section>
 
   <!-- Contact Section -->
   <section class="section contact" id="contact">
     <div>
-      <div class="section-label">LET'S WORK TOGETHER</div>
-      <h2>What can we help<br/><em>you achieve?</em></h2>
-      <p>Contact our strategic consulting and talent acquisition team in Addis Ababa.</p>
+      <div class="section-label" data-i18n="contact_eyebrow">LET'S WORK TOGETHER</div>
+      <h2 data-i18n="contact_title">What can we help<br/><em>you achieve?</em></h2>
+      <p data-i18n="contact_desc">Contact our strategic consulting and talent acquisition team in Addis Ababa.</p>
     </div>
     <form class="form-card" id="inquiryForm">
-      <h3>Send an inquiry</h3>
+      <h3 data-i18n="form_inquiry_title">Send an inquiry</h3>
       <div class="form-grid">
-        <label>Your name<input minlength="2" name="name" required=""/></label>
-        <label>Email address<input name="email" required="" type="email"/></label>
-        <label>Phone (optional)<input name="phone"/></label>
-        <label>I'm interested in
+        <label><span data-i18n="lbl_your_name">Your name</span><input minlength="2" name="name" required=""/></label>
+        <label><span data-i18n="lbl_email">Email address</span><input name="email" required="" type="email"/></label>
+        <label><span data-i18n="lbl_phone">Phone (optional)</span><input name="phone"/></label>
+        <label><span data-i18n="lbl_interest">I'm interested in</span>
           <select name="service">
-            <option>Employer Subscriptions</option>
-            <option>Talent Recruitment</option>
-            <option>Freelance Contracting</option>
-            <option>Consulting & Analytics</option>
+            <option data-i18n="opt_srv1">Employer Subscriptions</option>
+            <option data-i18n="opt_srv2">Talent Recruitment</option>
+            <option data-i18n="opt_srv3">Freelance Contracting</option>
+            <option data-i18n="opt_srv4">Consulting & Analytics</option>
           </select>
         </label>
-        <label class="full">How can we help?<textarea name="message" required="" rows="4"></textarea></label>
+        <label class="full"><span data-i18n="lbl_message">How can we help?</span><textarea name="message" required="" rows="4"></textarea></label>
       </div>
-      <button class="btn btn-primary" type="submit">Send inquiry ↗</button>
+      <button class="btn btn-primary" type="submit" data-i18n="btn_send_inquiry">Send inquiry ↗</button>
       <p class="form-feedback" id="inquiryFeedback" role="status"></p>
     </form>
   </section>
@@ -215,9 +215,9 @@
 <footer>
   <div class="footer-main">
     <a class="brand" href="#home"><span class="brand-icon">T</span><span><b>TATARI</b><small>CONSULTING</small></span></a>
-    <p>CAREERS · SEARCH ENGINE · FREELANCE · EXPORT DATA</p>
+    <p data-i18n="footer_sub">CAREERS · SEARCH ENGINE · FREELANCE · EXPORT DATA</p>
   </div>
-  <small class="copyright">© <span id="year"></span> TATARI Consulting. All rights reserved.</small>
+  <small class="copyright"><span data-i18n="footer_copy">©</span> <span id="year"></span> <span data-i18n="footer_rights">TATARI Consulting. All rights reserved.</span></small>
 </footer>
 
 <div id="modalRoot"></div>
