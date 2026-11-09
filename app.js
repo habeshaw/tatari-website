@@ -4,7 +4,7 @@
 
   let session = { user: { id: 'demo-user-123', email: 'user@tatari.et' } },
       profile = { full_name: 'Demo Member' },
-      role = 'normal_user', // 'normal_user', 'employer', 'admin'
+      role = 'normal_user',
       subscriptionPlan = 'free',
       selectedModule = 'all',
       products = [], courses = [], jobListings = [], freelanceProjects = [], testimonials = [],
@@ -545,8 +545,7 @@
       a.created_at||new Date().toISOString()
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('
-');
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
@@ -576,7 +575,7 @@
     toast('Excel spreadsheet exported successfully!');
   }
 
-  // GLOBAL FORM SUBMIT DELEGATION - Ensures forms inside modals or sections submit properly
+  // GLOBAL FORM SUBMIT DELEGATION
   document.addEventListener('submit', (e) => {
     const form = e.target;
     if (!form) return;
