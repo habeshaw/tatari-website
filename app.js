@@ -2,14 +2,17 @@
   const $ = (s, r=document) => r.querySelector(s);
   const $$ = (s, r=document) => [...r.querySelectorAll(s)];
   const cfg = window.TATARI_CONFIG || {};
-  let db = null, session = { user: { id: 'demo-user-123', email: 'user@tatari.et' } }, profile = { full_name: 'Demo Member' },
-      role = 'normal_user', // 'admin', 'employer', 'normal_user'
+
+  let db = null,
+      session = { user: { id: 'demo-user-123', email: 'user@tatari.et' } },
+      profile = { full_name: 'Demo Member' },
+      role = 'normal_user', // 'normal_user', 'employer', 'admin'
       subscriptionPlan = 'free', // 'free', 'starter', 'pro', 'enterprise'
-      selectedModule = 'all', products = [], courses = [], jobListings = [], freelanceProjects = [], testimonials = [],
+      selectedModule = 'all',
+      products = [], courses = [], jobListings = [], freelanceProjects = [], testimonials = [],
       applications = [], proposals = [],
       cart = loadSavedCart(), currency = 'ETB', currentLang = 'en';
 
-  // Business Logic Datasets with role attribution
   const defaultJobs = [
     { id: 'c1', title_en: 'Senior HR & Talent Acquisition Lead', title_am: 'የክፍተኛ የሰው ሀብት እና ታለንት መሪ', company_name: 'Hibret Bank S.C.', company_logo: '', location: 'Addis Ababa', salary_range: '45,000 ETB/mo', category: 'HR & Analytics', job_type: 'Full-Time', description_en: 'Lead organizational talent acquisition, policy planning, and workforce analytics across banking operations.', description_am: 'የድርጅት ታለንት ቅጥር እና ፖሊሲ እቅድን ይመሩ::', itemType: 'career', status: 'open', recruiter_id: 'employer-1' },
     { id: 'c2', title_en: 'Full-Stack Web & Mobile Developer', title_am: 'ሙሉ-ስታክ ዌብ እና ሞባይል አልሚ', company_name: 'Tatari Tech Labs', company_logo: '', location: 'Remote / Addis Ababa', salary_range: '65,000 ETB/mo', category: 'Software & Tech', job_type: 'Remote', description_en: 'Develop high-performance React, Node.js, and Supabase solutions for enterprise software systems.', description_am: 'ለፊንቴክ መድረኮች ከፍተኛ አፈጻጸም ያላቸውን የዌብ መተግበሪያዎች ይገንቡ::', itemType: 'career', status: 'open', recruiter_id: 'employer-2' }
@@ -49,7 +52,6 @@
   };
   const esc = s => String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const money = (n, c=currency) => `${c==='ETB'?'ETB':'$'} ${Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
-  const err = e => e?.message || 'Something went wrong. Please try again.';
 
   function setLanguage(lang) {
     currentLang = lang;
@@ -64,8 +66,6 @@
     const root = $('#modalRoot');
     if(!root) return;
     root.innerHTML = `<div class="modal-backdrop" id="backdrop"><div class="modal"><button class="modal-x" id="closeModal" type="button">×</button>${html}</div></div>`;
-    if($('#closeModal')) $('#closeModal').onclick = closeModal;
-    if($('#backdrop')) $('#backdrop').onclick = e => { if(e.target.id==='backdrop') closeModal(); };
     if (window.TATARI_I18N) window.TATARI_I18N.translate(root, currentLang);
   }
   function closeModal(){ const root = $('#modalRoot'); if(root) root.innerHTML = ''; }
@@ -111,8 +111,7 @@
       form.onsubmit = async e => {
         e.preventDefault();
         const f = new FormData(e.currentTarget);
-        const chosenRole = f.get('user_role') || 'normal_user';
-        role = chosenRole;
+        role = f.get('user_role') || 'normal_user';
         session = { user: { id: 'demo-user-123', email: f.get('email') || 'user@tatari.et' } };
         profile = { full_name: f.get('full_name') || 'Demo Member' };
         closeModal();
@@ -120,16 +119,10 @@
         toast(`Signed in as ${role === 'admin' ? '⚡ System Administrator' : role === 'employer' ? '🏢 Employer' : '👤 Ordinary User'}.`);
       };
     }
-    if($('#goSignup')) $('#goSignup').onclick = () => authModal('signup');
-    if($('#goReset')) $('#goReset').onclick = () => authModal('reset');
-    if($('#goSignin')) $('#goSignin').onclick = () => authModal('signin');
   }
 
   async function refreshUser() {
-    if($('#accountBtn')) {
-      if(!session) { $('#accountBtn').hidden = false; $('#accountBtn').textContent = 'Login'; }
-      else { $('#accountBtn').hidden = true; }
-    }
+    if($('#accountBtn')) $('#accountBtn').hidden = !!session;
     if($('#dashboardBtn')) {
       if(session) {
         $('#dashboardBtn').hidden = false;
@@ -279,10 +272,6 @@
           </article>`;
       }
     }).join('');
-
-    $$('[data-career-id]', grid).forEach(b => b.onclick = (e) => { e.preventDefault(); openCareerDetails(b.dataset.careerId); });
-    $$('[data-freelance-id]', grid).forEach(b => b.onclick = (e) => { e.preventDefault(); openFreelanceDetails(b.dataset.freelanceId); });
-    $$('[data-add]', grid).forEach(b => b.onclick = (e) => { e.preventDefault(); addCart(b.dataset.add, b.dataset.type); });
   }
 
   function parseNumericSalary(str) {
@@ -334,11 +323,9 @@
           <li>✓ ${planTier==='starter'?'Standard Candidate Tracking':'Company Logo Branding Uploads & High-Priority Placement'}</li>
           <li>✓ ${planTier==='starter'?'Community Support':'Direct Candidate CV & Application Export (CSV / Excel)'}</li>
         </ul>
-        <button class="btn btn-primary full-btn" id="confirmSubBtn" type="button">${isCurrent?'Plan Already Active':'Confirm Subscription Plan'}</button>
+        <button class="btn btn-primary full-btn" id="confirmSubBtn" data-action="confirm-sub" data-plan="${planTier}" type="button">${isCurrent?'Plan Already Active':'Confirm Subscription Plan'}</button>
       </div>
     `);
-
-    if($('#confirmSubBtn')) $('#confirmSubBtn').onclick = () => selectSubscriptionPlan(planTier);
   }
 
   async function selectSubscriptionPlan(planTier) {
@@ -349,7 +336,6 @@
     refreshUser();
   }
 
-  // Business Logic: Only Employers & Admins can publish listings
   function postVacancyModal() {
     if(role === 'normal_user') {
       toast('Business Logic Policy: Only Employers & Admins can post vacancies. Switched to Employer mode.', true);
@@ -440,16 +426,12 @@
     if(!cart.length){ toast('Your cart is empty.'); return; }
     const rows = cart.map(x => {
       const p = (x.type==='course'?courses:products).find(y => y.id === x.id);
-      return `<div class="cart-row"><div><b>${esc(p?.name||p?.title||'Resource')}</b><small>${x.type==='course'?'Course':'Digital product'}</small></div><div class="qty"><button type="button" data-minus="${x.id}">−</button>${x.quantity}<button type="button" data-plus="${x.id}">+</button></div><strong>${money((currency==='ETB'?p?.price_etb:p?.price_usd)*x.quantity)}</strong><button type="button" class="remove" data-remove="${x.id}">×</button></div>`;
+      return `<div class="cart-row"><div><b>${esc(p?.name||p?.title||'Resource')}</b><small>${x.type==='course'?'Course':'Digital product'}</small></div><div class="qty"><button type="button" data-action="qty-minus" data-id="${x.id}">−</button>${x.quantity}<button type="button" data-action="qty-plus" data-id="${x.id}">+</button></div><strong>${money((currency==='ETB'?p?.price_etb:p?.price_usd)*x.quantity)}</strong><button type="button" class="remove" data-action="qty-remove" data-id="${x.id}">×</button></div>`;
     }).join('');
     
-    modal(`<div class="section-label">YOUR SELECTION</div><h2>Your cart</h2><div class="cart-list">${rows}</div><div class="cart-total"><span>Currency</span><select id="cartCurrency"><option value="ETB" ${currency==='ETB'?'selected':''}>ETB</option><option value="USD" ${currency==='USD'?'selected':''}>USD</option></select><b>Total: ${money(cart.reduce((s,x)=>{const p=(x.type==='course'?courses:products).find(y=>y.id===x.id);return s+(currency==='ETB'?p?.price_etb||0:p?.price_usd||0)*x.quantity},0))}</b></div><button class="btn btn-primary full-btn" id="checkoutBtn" type="button">Continue to payment instructions</button>`);
+    modal(`<div class="section-label">YOUR SELECTION</div><h2>Your cart</h2><div class="cart-list">${rows}</div><div class="cart-total"><span>Currency</span><select id="cartCurrency"><option value="ETB" ${currency==='ETB'?'selected':''}>ETB</option><option value="USD" ${currency==='USD'?'selected':''}>USD</option></select><b>Total: ${money(cart.reduce((s,x)=>{const p=(x.type==='course'?courses:products).find(y=>y.id===x.id);return s+(currency==='ETB'?p?.price_etb||0:p?.price_usd||0)*x.quantity},0))}</b></div><button class="btn btn-primary full-btn" id="checkoutBtn" data-action="checkout" type="button">Continue to payment instructions</button>`);
     
     if($('#cartCurrency')) $('#cartCurrency').onchange = e => { currency = e.target.value; closeModal(); cartModal(); };
-    $$('[data-minus]').forEach(b => b.onclick = () => { const x=cart.find(i=>i.id===b.dataset.minus); x.quantity=Math.max(1,x.quantity-1); saveCart(); updateCartCount(); closeModal(); cartModal(); });
-    $$('[data-plus]').forEach(b => b.onclick = () => { const x=cart.find(i=>i.id===b.dataset.plus); x.quantity=Math.min(20,x.quantity+1); saveCart(); updateCartCount(); closeModal(); cartModal(); });
-    $$('[data-remove]').forEach(b => b.onclick = () => { cart = cart.filter(i=>i.id!==b.dataset.remove); saveCart(); updateCartCount(); closeModal(); cartModal(); });
-    if($('#checkoutBtn')) $('#checkoutBtn').onclick = checkout;
   }
 
   async function checkout() {
@@ -458,7 +440,6 @@
     toast('Order created successfully. Payment instructions sent.');
   }
 
-  // Business Logic: Ordinary Users apply for jobs
   async function openCareerDetails(jobId) {
     const job = jobListings.find(j => String(j.id) === String(jobId));
     if(!job) return;
@@ -506,7 +487,6 @@
     }
   }
 
-  // Business Logic: Ordinary Users submit freelance proposals
   async function openFreelanceDetails(projectId) {
     const project = freelanceProjects.find(j => String(j.id) === String(projectId));
     if(!project) return;
@@ -576,7 +556,6 @@
     }
   }
 
-  // Multi-Role Dashboard following explicit Business Logic rules
   async function accountModal() {
     const roleTitle = role === 'admin' ? '⚡ System Administrator' : role === 'employer' ? '🏢 Employer / Recruiter' : '👤 Ordinary User (Job Seeker / Freelancer)';
     const roleBadgeClass = role === 'admin' ? 'admin' : role === 'employer' ? 'employer' : 'normal_user';
@@ -613,9 +592,9 @@
         <p style="margin:0; color:#475569; line-height:1.6;">${permissionsInfo}</p>
         <div style="margin-top:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
           <span style="font-weight:700;">Switch Role View:</span>
-          <button class="btn btn-small ${role==='normal_user'?'btn-primary':'btn-outline'}" id="roleUserBtn" type="button">Ordinary User</button>
-          <button class="btn btn-small ${role==='employer'?'btn-primary':'btn-outline'}" id="roleEmpBtn" type="button">Employer</button>
-          <button class="btn btn-small ${role==='admin'?'btn-primary':'btn-outline'}" id="roleAdminBtn" type="button">Administrator</button>
+          <button class="btn btn-small ${role==='normal_user'?'btn-primary':'btn-outline'}" data-action="switch-role" data-role="normal_user" type="button">Ordinary User</button>
+          <button class="btn btn-small ${role==='employer'?'btn-primary':'btn-outline'}" data-action="switch-role" data-role="employer" type="button">Employer</button>
+          <button class="btn btn-small ${role==='admin'?'btn-primary':'btn-outline'}" data-action="switch-role" data-role="admin" type="button">Administrator</button>
         </div>
       </div>
 
@@ -623,9 +602,9 @@
       
       ${role==='admin' || role==='employer' ? `
         <div class="admin-actions-bar">
-          <button class="btn btn-primary btn-small" id="exportCSVBtn" type="button">📥 Export Applications (CSV)</button>
-          <button class="btn btn-outline btn-small" id="exportExcelBtn" type="button">📊 Export Applications (Excel)</button>
-          <button class="btn btn-outline btn-small" id="dashPostBtn" type="button">+ Post Vacancy</button>
+          <button class="btn btn-primary btn-small" data-action="export-csv" type="button">📥 Export Applications (CSV)</button>
+          <button class="btn btn-outline btn-small" data-action="export-excel" type="button">📊 Export Applications (Excel)</button>
+          <button class="btn btn-outline btn-small" data-action="post-vacancy" type="button">+ Post Vacancy</button>
         </div>
       ` : ''}
 
@@ -653,45 +632,9 @@
 
       <div class="portal-foot">
         <span>Account: ${esc(session?.user?.email || 'user@tatari.et')}</span>
-        <button id="signOut" class="btn btn-outline btn-small" type="button">Logout</button>
+        <button id="signOut" data-action="sign-out" class="btn btn-outline btn-small" type="button">Logout</button>
       </div>
     `);
-
-    if($('#roleUserBtn')) $('#roleUserBtn').onclick = () => { switchRole('normal_user'); closeModal(); accountModal(); };
-    if($('#roleEmpBtn')) $('#roleEmpBtn').onclick = () => { switchRole('employer'); closeModal(); accountModal(); };
-    if($('#roleAdminBtn')) $('#roleAdminBtn').onclick = () => { switchRole('admin'); closeModal(); accountModal(); };
-
-    if($('#exportCSVBtn')) $('#exportCSVBtn').onclick = () => exportApplicationsCSV(applications);
-    if($('#exportExcelBtn')) $('#exportExcelBtn').onclick = () => exportApplicationsExcel(applications);
-    if($('#dashPostBtn')) $('#dashPostBtn').onclick = () => postVacancyModal();
-
-    $$('[data-app-action]').forEach(b => b.onclick = (e) => {
-      const appId = b.dataset.id;
-      const newStat = b.dataset.appAction;
-      const app = applications.find(x => x.id === appId);
-      if(app) app.status = newStat;
-      toast(`Application status updated to ${newStat.toUpperCase()}.`);
-      closeModal(); accountModal();
-    });
-
-    const tabs = $$('[data-tab]');
-    tabs.forEach(t => t.onclick = () => {
-      tabs.forEach(x => x.classList.toggle('active', x===t));
-      const c = $('#portalContent');
-      if(c) {
-        if(t.dataset.tab === 'apps') {
-          c.innerHTML = `
-            <table class="admin-table">
-              <thead><tr><th>Applicant</th><th>Job & Company</th><th>Resume</th><th>Status</th>${role==='admin'||role==='employer'?'<th>Action</th>':''}</tr></thead>
-              <tbody>${appRowsHtml || '<tr><td colspan="5" class="empty">No applications found.</td></tr>'}</tbody>
-            </table>`;
-        } else {
-          c.innerHTML = proposals.length ? proposals.map(p => `<div class="order-card"><div><b>${esc(p.jobs?.title_en||'Freelance Project')}</b><small>Bid: ${money(p.bid_amount)} · Delivery: ${p.delivery_days} days</small></div><span class="status ${p.status}">${esc(p.status)}</span></div>`).join('') : '<div class="empty">No proposals submitted yet.</div>';
-        }
-      }
-    });
-
-    if($('#signOut')) $('#signOut').onclick = async () => { session = null; closeModal(); refreshUser(); toast('Signed out.'); };
   }
 
   function exportApplicationsCSV(data) {
@@ -745,31 +688,98 @@
     f.reset(); if(fb) fb.textContent = 'Thank you. Your inquiry has been sent to TATARI.'; toast('Inquiry sent successfully.');
   }
 
+  // GLOBAL EVENT DELEGATION - Ensures 100% of buttons and dynamic clicks work regardless of when elements are created
+  document.addEventListener('click', (e) => {
+    const target = e.target.closest('button, a, [data-action], [data-module], [data-plan-modal]');
+    if (!target) return;
+
+    // Header & Navigation Buttons
+    if (target.id === 'accountBtn') { e.preventDefault(); authModal(); return; }
+    if (target.id === 'dashboardBtn') { e.preventDefault(); accountModal(); return; }
+    if (target.id === 'logoutBtn') { e.preventDefault(); session = null; refreshUser(); toast('Signed out.'); return; }
+    if (target.id === 'mobileMenu') { e.preventDefault(); if($('#nav')) $('#nav').classList.toggle('open'); return; }
+    if (target.id === 'langEN') { e.preventDefault(); setLanguage('en'); return; }
+    if (target.id === 'langAM') { e.preventDefault(); setLanguage('am'); return; }
+    if (target.id === 'addTestimonialBtn') { e.preventDefault(); addTestimonialModal(); return; }
+    if (target.id === 'postListingBtn') { e.preventDefault(); postVacancyModal(); return; }
+    if (target.id === 'cartFab') { e.preventDefault(); cartModal(); return; }
+    if (target.id === 'closeModal' || target.id === 'backdrop') { e.preventDefault(); closeModal(); return; }
+
+    // Module Selection Tabs
+    if (target.dataset.module) {
+      e.preventDefault();
+      $$('#moduleSelectTabs button').forEach(x => x.classList.remove('active'));
+      target.classList.add('active');
+      selectedModule = target.dataset.module;
+      renderSearchResults();
+      return;
+    }
+
+    // Subscription Plan Modal Buttons
+    if (target.dataset.planModal) { e.preventDefault(); subscriptionPlanModal(target.dataset.planModal); return; }
+    if (target.dataset.action === 'confirm-sub') { e.preventDefault(); selectSubscriptionPlan(target.dataset.plan); return; }
+
+    // Search Engine Result Cards (Apply, Proposal, Add to Cart)
+    if (target.dataset.careerId) { e.preventDefault(); openCareerDetails(target.dataset.careerId); return; }
+    if (target.dataset.freelanceId) { e.preventDefault(); openFreelanceDetails(target.dataset.freelanceId); return; }
+    if (target.dataset.add) { e.preventDefault(); addCart(target.dataset.add, target.dataset.type); return; }
+
+    // Role Switcher Actions
+    if (target.dataset.action === 'switch-role') {
+      e.preventDefault();
+      switchRole(target.dataset.role);
+      closeModal();
+      accountModal();
+      return;
+    }
+
+    // Dashboard Actions
+    if (target.dataset.action === 'export-csv') { e.preventDefault(); exportApplicationsCSV(applications); return; }
+    if (target.dataset.action === 'export-excel') { e.preventDefault(); exportApplicationsExcel(applications); return; }
+    if (target.dataset.action === 'post-vacancy') { e.preventDefault(); postVacancyModal(); return; }
+    if (target.dataset.action === 'sign-out') { e.preventDefault(); session = null; closeModal(); refreshUser(); toast('Signed out.'); return; }
+
+    // Application Approve / Reject Status Buttons
+    if (target.dataset.appAction) {
+      e.preventDefault();
+      const app = applications.find(x => x.id === target.dataset.id);
+      if (app) app.status = target.dataset.appAction;
+      toast(`Application status updated to ${target.dataset.appAction.toUpperCase()}.`);
+      closeModal(); accountModal();
+      return;
+    }
+
+    // Cart Quantities
+    if (target.dataset.action === 'qty-minus') {
+      e.preventDefault();
+      const item = cart.find(x => x.id === target.dataset.id);
+      if (item) item.quantity = Math.max(1, item.quantity - 1);
+      saveCart(); updateCartCount(); closeModal(); cartModal();
+      return;
+    }
+    if (target.dataset.action === 'qty-plus') {
+      e.preventDefault();
+      const item = cart.find(x => x.id === target.dataset.id);
+      if (item) item.quantity = Math.min(20, item.quantity + 1);
+      saveCart(); updateCartCount(); closeModal(); cartModal();
+      return;
+    }
+    if (target.dataset.action === 'qty-remove') {
+      e.preventDefault();
+      cart = cart.filter(x => x.id !== target.dataset.id);
+      saveCart(); updateCartCount(); closeModal(); cartModal();
+      return;
+    }
+    if (target.dataset.action === 'checkout') { e.preventDefault(); checkout(); return; }
+
+    // Auth Modal Switch Buttons
+    if (target.id === 'goSignup') { e.preventDefault(); authModal('signup'); return; }
+    if (target.id === 'goReset') { e.preventDefault(); authModal('reset'); return; }
+    if (target.id === 'goSignin') { e.preventDefault(); authModal('signin'); return; }
+  });
+
   async function init() {
     if($('#year')) $('#year').textContent = new Date().getFullYear();
-    if($('#mobileMenu')) $('#mobileMenu').onclick = () => { if($('#nav')) $('#nav').classList.toggle('open'); };
-    if($('#accountBtn')) $('#accountBtn').onclick = () => authModal();
-    if($('#dashboardBtn')) $('#dashboardBtn').onclick = () => accountModal();
-    if($('#logoutBtn')) $('#logoutBtn').onclick = async () => { session = null; await refreshUser(); toast('Signed out.'); };
-    if($('#langEN')) $('#langEN').onclick = () => setLanguage('en');
-    if($('#langAM')) $('#langAM').onclick = () => setLanguage('am');
-    
-    if($('#addTestimonialBtn')) $('#addTestimonialBtn').onclick = () => addTestimonialModal();
-    if($('#postListingBtn')) $('#postListingBtn').onclick = () => postVacancyModal();
-
-    const moduleTabs = $$('#moduleSelectTabs button');
-    moduleTabs.forEach(b => {
-      b.onclick = (e) => {
-        e.preventDefault();
-        moduleTabs.forEach(x => x.classList.remove('active'));
-        b.classList.add('active');
-        selectedModule = b.dataset.module;
-        renderSearchResults();
-      };
-    });
-
-    $$('[data-plan-modal]').forEach(b => b.onclick = () => subscriptionPlanModal(b.dataset.planModal));
-
     if($('#filterKeyword')) $('#filterKeyword').oninput = renderSearchResults;
     if($('#filterLocation')) $('#filterLocation').oninput = renderSearchResults;
     if($('#filterSalary')) $('#filterSalary').oninput = renderSearchResults;
@@ -780,11 +790,12 @@
 
     await loadData();
     await refreshUser();
-    
+
     const cartButton = document.createElement('button');
     cartButton.type = 'button'; cartButton.id = 'cartFab'; cartButton.className = 'cart-fab';
-    cartButton.innerHTML = 'Cart (0) <span>▣</span>'; cartButton.onclick = cartModal;
-    document.body.append(cartButton); updateCartCount();
+    cartButton.innerHTML = 'Cart (0) <span>▣</span>';
+    document.body.append(cartButton);
+    updateCartCount();
   }
 
   if (document.readyState === 'loading') {
