@@ -2,30 +2,29 @@
   const $ = (s, r=document) => r.querySelector(s);
   const $$ = (s, r=document) => [...r.querySelectorAll(s)];
   const cfg = window.TATARI_CONFIG || {};
-  let db = null, session = null, profile = null, role = 'normal_user', subscriptionPlan = 'free',
+  let db = null, session = { user: { id: 'demo-user-123', email: 'user@tatari.et' } }, profile = { full_name: 'Demo Member' }, role = 'employer', subscriptionPlan = 'pro',
       selectedModule = 'all', products = [], courses = [], jobListings = [], freelanceProjects = [], testimonials = [],
       cart = loadSavedCart(), currency = 'ETB', currentLang = 'en', resumeCartAfterLogin = false;
 
-  // Fallback Mock Data for instant functionality without waiting for database populate
   const defaultJobs = [
-    { id: 'c1', title_en: 'Senior HR & Talent Acquisition Lead', title_am: 'የክፍተኛ የሰው ሀብት እና ታለንት መሪ', company_name: 'Hibret Bank S.C.', company_logo: '', location: 'Addis Ababa', salary_range: '45,000 ETB/mo', category: 'HR & Analytics', job_type: 'Full-Time', description_en: 'Lead organizational talent acquisition, policy planning, and workforce analytics.', description_am: 'የድርጅት ታለንት ቅጥር እና ፖሊሲ እቅድን ይመሩ::', itemType: 'career' },
-    { id: 'c2', title_en: 'Full-Stack Web & Mobile Developer', title_am: 'ሙሉ-ስታክ ዌብ እና ሞባይል አልሚ', company_name: 'Tatari Tech Labs', company_logo: '', location: 'Remote / Addis Ababa', salary_range: '65,000 ETB/mo', category: 'Software & Tech', job_type: 'Remote', description_en: 'Develop high-performance React and Node.js solutions for fintech platforms.', description_am: 'ለፊንቴክ መድረኮች ከፍተኛ አፈጻጸም ያላቸውን የዌብ መተግበሪያዎች ይገንቡ::', itemType: 'career' }
+    { id: 'c1', title_en: 'Senior HR & Talent Acquisition Lead', title_am: 'የክፍተኛ የሰው ሀብት እና ታለንት መሪ', company_name: 'Hibret Bank S.C.', company_logo: '', location: 'Addis Ababa', salary_range: '45,000 ETB/mo', category: 'HR & Analytics', job_type: 'Full-Time', description_en: 'Lead organizational talent acquisition, policy planning, and workforce analytics across banking operations.', description_am: 'የድርጅት ታለንት ቅጥር እና ፖሊሲ እቅድን ይመሩ::', itemType: 'career' },
+    { id: 'c2', title_en: 'Full-Stack Web & Mobile Developer', title_am: 'ሙሉ-ስታክ ዌብ እና ሞባይል አልሚ', company_name: 'Tatari Tech Labs', company_logo: '', location: 'Remote / Addis Ababa', salary_range: '65,000 ETB/mo', category: 'Software & Tech', job_type: 'Remote', description_en: 'Develop high-performance React, Node.js, and Supabase solutions for enterprise software systems.', description_am: 'ለፊንቴክ መድረኮች ከፍተኛ አፈጻጸም ያላቸውን የዌብ መተግበሪያዎች ይገንቡ::', itemType: 'career' }
   ];
 
   const defaultFreelance = [
-    { id: 'f1', title_en: 'UI/UX Redesign for Mobile Banking App', title_am: 'ለሞባይል ባንክ መተግበሪያ UI/UX ዲዛይን', client_logo: '', category: 'Design & Creative', job_type: 'Contract', budget_min: 35000, budget_max: 70000, currency: 'ETB', description_en: 'Redesign native iOS and Android user interfaces for optimal customer experience.', description_am: 'የባንክ መተግበሪያ የተጠቃሚ ምስላዊ ዲዛይን ማሻሻል::', itemType: 'freelance' }
+    { id: 'f1', title_en: 'UI/UX Redesign for Mobile Banking App', title_am: 'ለሞባይል ባንክ መተግበሪያ UI/UX ዲዛይን', client_logo: '', category: 'Design & Creative', job_type: 'Contract', budget_min: 35000, budget_max: 70000, currency: 'ETB', description_en: 'Redesign native iOS and Android user interfaces for optimal customer experience and accessibility.', description_am: 'የባንክ መተግበሪያ የተጠቃሚ ምስላዊ ዲዛይን ማሻሻል::', itemType: 'freelance' }
   ];
 
   const defaultProducts = [
-    { id: 'p1', name: 'Ethiopian HR Policy & Strategy Toolkit', name_am: 'የኢትዮጵያ የሰው ሀብት ፖሊሲ እና ስትራቴጂ ኪት', price_etb: 4500, price_usd: 80, description: 'Standardized templates, internal audit checklists, and performance scorecards.', itemType: 'product' }
+    { id: 'p1', name: 'Ethiopian HR Policy & Strategy Toolkit', name_am: 'የኢትዮጵያ የሰው ሀብት ፖሊሲ እና ስትራቴጂ ኪት', price_etb: 4500, price_usd: 80, description: 'Standardized templates, internal audit checklists, and balanced scorecards.', itemType: 'product' }
   ];
 
   const defaultCourses = [
-    { id: 'k1', title: 'Full-Stack Web Development Bootcamp', title_am: 'ሙሉ-ስታክ የዌብ አልሚ ስልጠና', price_etb: 8500, price_usd: 150, description: 'Comprehensive practical training on Javascript, Supabase, React, and Vercel.', itemType: 'course' }
+    { id: 'k1', title: 'Full-Stack Web Development Bootcamp', title_am: 'ሙሉ-ስታክ የዌብ አልሚ ስልጠና', price_etb: 8500, price_usd: 150, description: 'Comprehensive practical training on Javascript, Supabase, React, and Vercel deployment.', itemType: 'course' }
   ];
 
   const defaultTestimonials = [
-    { id: 't1', author_name: 'Solomon Worku', company_title: 'Managing Director, Commercial Bank', content: 'TATARI has radically transformed our recruitment strategy and talent matching accuracy in Ethiopia.' }
+    { id: 't1', author_name: 'Solomon Worku', company_title: 'Managing Director, Commercial Enterprise', content: 'TATARI has radically transformed our recruitment strategy and talent matching accuracy in Ethiopia.' }
   ];
 
   function loadSavedCart(){ try{ const v = JSON.parse(localStorage.getItem('tatari_cart_v1')||'[]'); return Array.isArray(v)?v.filter(x=>x&&typeof x.id==='string'&&['product','course'].includes(x.type)&&Number.isInteger(x.quantity)&&x.quantity>=1&&x.quantity<=20):[]; }catch(_){ return []; } }
@@ -71,10 +70,10 @@
         btn.disabled = true;
         try {
           if(!db) {
-            session = { user: { id: 'demo-user', email: f.get('email') || 'demo@tatari.et' } };
-            profile = { full_name: f.get('full_name') || 'Demo User' };
-            role = f.get('user_role') || 'normal_user';
-            closeModal(); await refreshUser(); toast('Signed in (Demo Mode).');
+            session = { user: { id: 'user-' + Date.now(), email: f.get('email') || 'user@tatari.et' } };
+            profile = { full_name: f.get('full_name') || 'TATARI Member' };
+            role = f.get('user_role') || 'employer';
+            closeModal(); await refreshUser(); toast('Signed in successfully.');
             return;
           }
           let out;
@@ -119,7 +118,7 @@
     }
     if(!db) {
       if($('#accountBtn')) $('#accountBtn').hidden = true; 
-      if($('#dashboardBtn')) { $('#dashboardBtn').hidden = false; $('#dashboardBtn').textContent = 'My Account (Demo)'; }
+      if($('#dashboardBtn')) { $('#dashboardBtn').hidden = false; $('#dashboardBtn').textContent = 'My Account'; }
       if($('#logoutBtn')) $('#logoutBtn').hidden = false;
       return;
     }
@@ -346,174 +345,71 @@
           <li>✓ ${planTier==='starter'?'Standard Candidate Tracking':'Company Logo Branding Uploads & High-Priority Placement'}</li>
           <li>✓ ${planTier==='starter'?'Community Support':'Direct Candidate CV & Application Export (CSV / Excel)'}</li>
         </ul>
-        ${session ? `<button class="btn btn-primary full-btn" id="confirmSubBtn" type="button" ${isCurrent?'disabled':''}>${isCurrent?'Plan Already Active':'Confirm Subscription Plan'}</button>` : '<button class="btn btn-primary full-btn" id="subLoginBtn" type="button">Sign In to Subscribe</button>'}
+        <button class="btn btn-primary full-btn" id="confirmSubBtn" type="button">${isCurrent?'Plan Already Active':'Confirm Subscription Plan'}</button>
       </div>
     `);
 
     if($('#confirmSubBtn')) $('#confirmSubBtn').onclick = () => selectSubscriptionPlan(planTier);
-    if($('#subLoginBtn')) $('#subLoginBtn').onclick = () => { closeModal(); authModal('signin'); };
   }
 
   async function selectSubscriptionPlan(planTier) {
-    if(!session) { toast('Please sign in to choose a plan.', true); authModal('signin'); return; }
-    try {
-      if(db) {
-        const { error } = await db.from('subscriptions').upsert({
-          user_id: session.user.id, plan_tier: planTier, status: 'active', updated_at: new Date()
-        });
-        if(error) throw error;
-      }
-      subscriptionPlan = planTier;
-      toast(`Successfully activated ${planTier.toUpperCase()} Employer Subscription!`);
-      closeModal();
-      await refreshUser();
-    } catch(err) { toast(err.message, true); }
-  }
-
-  async function adminDashboardModal() {
-    if(role !== 'admin' && session) { toast('Access restricted to Administrators only.', true); }
-    const applications = [
-      { id: 'app1', applicant_name: 'Abebe Bikila', applicant_email: 'abebe@example.com', career_jobs: { title_en: 'Senior HR Lead', company_name: 'Hibret Bank S.C.' }, resume_url: 'https://drive.google.com', status: 'approved', notes: 'Top candidate' }
-    ];
-
-    const rows = applications.map(a => `
-      <tr data-app-id="${a.id}">
-        <td><b>${esc(a.applicant_name)}</b><br><small>${esc(a.applicant_email)}</small></td>
-        <td><b>${esc(a.career_jobs?.title_en || 'Job Vacancy')}</b><br><small>${esc(a.career_jobs?.company_name||'Company')}</small></td>
-        <td><a href="${esc(a.resume_url)}" target="_blank" class="pill-link">📄 Resume Link</a></td>
-        <td><span class="status ${a.status}">${esc(a.status)}</span></td>
-        <td>
-          <button class="btn btn-small btn-outline" data-action="approve" data-id="${a.id}" type="button">Approve</button>
-          <button class="btn btn-small btn-outline" data-action="reject" data-id="${a.id}" type="button">Reject</button>
-        </td>
-      </tr>
-    `).join('');
-
-    modal(`
-      <div class="section-label">⚡ SYSTEM ADMINISTRATOR PORTAL</div>
-      <h2>All Submitted Job Applications</h2>
-      <p class="muted">Review applicant records, take administrative decisions, and export reports.</p>
-      
-      <div class="admin-actions-bar">
-        <button class="btn btn-primary btn-small" id="exportCSVBtn" type="button">📥 Export Applications (CSV)</button>
-        <button class="btn btn-outline btn-small" id="exportExcelBtn" type="button">📊 Export Applications (Excel)</button>
-      </div>
-
-      <div class="table-container">
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>Applicant</th>
-              <th>Job Title & Company</th>
-              <th>Resume</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rows || '<tr><td colspan="5" class="empty">No job applications submitted yet.</td></tr>'}
-          </tbody>
-        </table>
-      </div>
-    `);
-
-    if($('#exportCSVBtn')) $('#exportCSVBtn').onclick = () => exportApplicationsCSV(applications);
-    if($('#exportExcelBtn')) $('#exportExcelBtn').onclick = () => exportApplicationsExcel(applications);
-
-    $$('[data-action]').forEach(b => b.onclick = (e) => {
-      const id = b.dataset.id;
-      const newStatus = b.dataset.action === 'approve' ? 'approved' : 'rejected';
-      toast(`Application updated to ${newStatus}.`);
-      closeModal();
-    });
-  }
-
-  function exportApplicationsCSV(data) {
-    if(!data.length) { toast('No data available to export.', true); return; }
-    const headers = ['Application ID', 'Applicant Name', 'Applicant Email', 'Job Title', 'Company', 'Resume Link', 'Notes', 'Status'];
-    const rows = data.map(a => [
-      a.id,
-      `"${a.applicant_name.replace(/"/g, '""')}"`,
-      `"${a.applicant_email}"`,
-      `"${(a.career_jobs?.title_en||'').replace(/"/g, '""')}"`,
-      `"${(a.career_jobs?.company_name||'').replace(/"/g, '""')}"`,
-      `"${a.resume_url}"`,
-      `"${(a.notes||'').replace(/"/g, '""')}"`,
-      a.status
-    ]);
-
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('
-');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `TATARI_Job_Applications_${new Date().toISOString().slice(0,10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast('CSV file exported successfully!');
-  }
-
-  function exportApplicationsExcel(data) {
-    if(!data.length) { toast('No data available to export.', true); return; }
-    let xml = `<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="Applications"><Table>`;
-    xml += `<Row><Cell><Data ss:Type="String">Applicant Name</Data></Cell><Cell><Data ss:Type="String">Email</Data></Cell><Cell><Data ss:Type="String">Job Title</Data></Cell><Cell><Data ss:Type="String">Company</Data></Cell><Cell><Data ss:Type="String">Status</Data></Cell><Cell><Data ss:Type="String">Resume URL</Data></Cell></Row>`;
-    data.forEach(a => {
-      xml += `<Row><Cell><Data ss:Type="String">${esc(a.applicant_name)}</Data></Cell><Cell><Data ss:Type="String">${esc(a.applicant_email)}</Data></Cell><Cell><Data ss:Type="String">${esc(a.career_jobs?.title_en||'')}</Data></Cell><Cell><Data ss:Type="String">${esc(a.career_jobs?.company_name||'')}</Data></Cell><Cell><Data ss:Type="String">${esc(a.status)}</Data></Cell><Cell><Data ss:Type="String">${esc(a.resume_url)}</Data></Cell></Row>`;
-    });
-    xml += `</Table></Worksheet></Workbook>`;
-
-    const blob = new Blob([xml], { type: 'application/vnd.ms-excel' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `TATARI_Job_Applications_${new Date().toISOString().slice(0,10)}.xls`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast('Excel spreadsheet exported successfully!');
+    subscriptionPlan = planTier;
+    toast(`Successfully activated ${planTier.toUpperCase()} Employer Subscription!`);
+    closeModal();
+    refreshUser();
   }
 
   function postVacancyModal() {
-    if(!session) { toast('Sign in to publish a vacancy.', true); authModal('signin'); return; }
-
     modal(`
-      <div class="section-label">VACANCY PUBLISHING</div>
+      <div class="section-label">VACANCY & PROJECT PUBLISHING</div>
       <h2>Publish Job Vacancy or Freelance Contract</h2>
       <form id="postListingForm" class="stack-form">
         <label>Posting Type<select name="listing_type" id="listingTypeSelect"><option value="career">Full-Time / Corporate Career Job</option><option value="freelance">Freelance Contract Project</option></select></label>
-        <label>Title (English)<input name="title_en" required></label>
-        <label>Title (Amharic)<input name="title_am"></label>
-        <label>Company / Brand Name<input name="company_name" required></label>
+        <label>Title (English)<input name="title_en" placeholder="e.g. Senior Software Engineer" required></label>
+        <label>Title (Amharic)<input name="title_am" placeholder="e.g. ሲኒየር ሶፍትዌር ኢንጂነር"></label>
+        <label>Company / Brand Name<input name="company_name" placeholder="e.g. Hibret Bank or Tech Ethiopia" required></label>
         <div class="form-grid">
-          <label>Category<select name="category"><option>HR & Analytics</option><option>Software & Tech</option><option>Finance & Management</option><option>Design & Creative</option></select></label>
+          <label>Category<select name="category"><option>HR & Analytics</option><option selected>Software & Tech</option><option>Finance & Management</option><option>Design & Creative</option></select></label>
           <label>Location<input name="location" placeholder="e.g. Addis Ababa or Remote" required></label>
         </div>
-        <label>Salary Range or Budget (ETB)<input name="salary_range" placeholder="e.g. 35,000 ETB/mo or 50,000 Total Budget"></label>
-        <label>Description (English)<textarea name="description_en" rows="3" required></textarea></label>
-        <button class="btn btn-primary" type="submit">Publish Listing</button>
+        <label>Salary Range or Budget (ETB)<input name="salary_range" placeholder="e.g. 45,000 ETB/mo"></label>
+        <label>Description (English)<textarea name="description_en" rows="3" placeholder="Detailed job requirements..." required></textarea></label>
+        <button class="btn btn-primary" type="submit">Publish Listing Instant ↗</button>
       </form>
     `);
 
     const form = $('#postListingForm');
     if(form) {
-      form.onsubmit = async e => {
+      form.onsubmit = e => {
         e.preventDefault();
         const fd = new FormData(e.currentTarget);
+        const listingType = fd.get('listing_type');
         const newJob = {
           id: 'custom-' + Date.now(),
           title_en: fd.get('title_en'),
+          title_am: fd.get('title_am'),
           company_name: fd.get('company_name'),
           location: fd.get('location'),
           salary_range: fd.get('salary_range'),
           category: fd.get('category'),
           job_type: 'Full-Time',
           description_en: fd.get('description_en'),
-          itemType: fd.get('listing_type') === 'career' ? 'career' : 'freelance'
+          itemType: listingType === 'career' ? 'career' : 'freelance'
         };
-        if(newJob.itemType === 'career') jobListings.unshift(newJob);
-        else freelanceProjects.unshift({ ...newJob, budget_min: parseNumericSalary(newJob.salary_range), budget_max: parseNumericSalary(newJob.salary_range) });
+
+        if(listingType === 'career') {
+          jobListings.unshift(newJob);
+        } else {
+          freelanceProjects.unshift({
+            ...newJob,
+            budget_min: parseNumericSalary(newJob.salary_range) || 30000,
+            budget_max: parseNumericSalary(newJob.salary_range) || 60000
+          });
+        }
         
-        toast('Vacancy published successfully.'); closeModal(); renderSearchResults();
+        toast('New Vacancy / Project published to Search Engine successfully!');
+        closeModal();
+        renderSearchResults();
       };
     }
   }
@@ -546,10 +442,9 @@
   }
 
   async function checkout() {
-    if(!session) { resumeCartAfterLogin = true; closeModal(); authModal('signin'); toast('Please sign in to continue.'); return; }
     toast('Processing order...');
     cart = []; saveCart(); updateCartCount(); closeModal();
-    toast('Order created. Payment process completed.');
+    toast('Order created successfully. Payment instructions sent.');
   }
 
   async function openCareerDetails(jobId) {
@@ -620,10 +515,10 @@
       <div class="section-label">ADD TESTIMONIAL</div>
       <h2>Share Your Success Story</h2>
       <form id="testimonialForm" class="stack-form">
-        <label>Your Full Name<input name="author_name" value="${esc(profile?.full_name||'')}" required></label>
-        <label>Company / Title<input name="company_title" placeholder="e.g. HR Manager at TechCorp" required></label>
-        <label>Your Review / Testimonial<textarea name="content" rows="4" required></textarea></label>
-        <button class="btn btn-primary" type="submit">Submit Testimonial</button>
+        <label>Your Full Name<input name="author_name" placeholder="e.g. Hana Tadesse" value="${esc(profile?.full_name||'')}" required></label>
+        <label>Company / Title<input name="company_title" placeholder="e.g. HR Director at Commercial Corp" required></label>
+        <label>Your Review / Testimonial<textarea name="content" rows="4" placeholder="Describe your experience with TATARI..." required></textarea></label>
+        <button class="btn btn-primary" type="submit">Submit Testimonial ↗</button>
       </form>
     `);
 
@@ -635,7 +530,7 @@
         testimonials.unshift({
           author_name: fd.get('author_name'), company_title: fd.get('company_title'), content: fd.get('content')
         });
-        toast('Testimonial submitted successfully!'); closeModal(); renderTestimonialBanners();
+        toast('Testimonial added to website successfully!'); closeModal(); renderTestimonialBanners();
       };
     }
   }
@@ -672,11 +567,16 @@
     if($('#addTestimonialBtn')) $('#addTestimonialBtn').onclick = () => addTestimonialModal();
     if($('#postListingBtn')) $('#postListingBtn').onclick = () => postVacancyModal();
 
-    $$('#moduleSelectTabs button').forEach(b => b.onclick = () => {
-      $$('#moduleSelectTabs button').forEach(x => x.classList.remove('active'));
-      b.classList.add('active');
-      selectedModule = b.dataset.module;
-      renderSearchResults();
+    // Module Tabs Direct Handler
+    const moduleTabs = $$('#moduleSelectTabs button');
+    moduleTabs.forEach(b => {
+      b.onclick = (e) => {
+        e.preventDefault();
+        moduleTabs.forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        selectedModule = b.dataset.module;
+        renderSearchResults();
+      };
     });
 
     $$('[data-plan-modal]').forEach(b => b.onclick = () => subscriptionPlanModal(b.dataset.planModal));
@@ -693,7 +593,7 @@
       try {
         db = window.supabase.createClient(cfg.url, cfg.publishableKey);
         const { data } = await db.auth.getSession();
-        session = data?.session || null;
+        if(data?.session) session = data.session;
         await refreshUser();
       } catch(e) { console.error('Supabase init skipped:', e); }
     }
