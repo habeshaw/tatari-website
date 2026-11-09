@@ -1,43 +1,224 @@
 (() => {
   const $ = (s, r=document) => r.querySelector(s), $$ = (s,r=document)=>[...r.querySelectorAll(s)];
-  const cfg=window.TATARI_CONFIG||{}; let db=null, session=null, profile=null, role='customer', catalog=[], cart=loadSavedCart(), currency='ETB', recoveryModalOpened=false, resumeCartAfterLogin=false;
-  function loadSavedCart(){try{const value=JSON.parse(localStorage.getItem('tatari_cart_v1')||'[]');return Array.isArray(value)?value.filter(x=>x&&typeof x.id==='string'&&['product','course'].includes(x.type)&&Number.isInteger(x.quantity)&&x.quantity>=1&&x.quantity<=20):[]}catch(_){return []}}
-  function saveCart(){try{localStorage.setItem('tatari_cart_v1',JSON.stringify(cart));}catch(e){console.warn('TATARI cart could not be saved in this browser:',e)}}
-  function updateCartCount(){const b=$('#cartFab');if(b)b.innerHTML=`Cart (${cart.reduce((n,x)=>n+x.quantity,0)}) <span>▣</span>`;}
-  const toast=(msg,bad=false)=>{const el=$('#toast');el.textContent=msg;el.className=bad?'show bad':'show';clearTimeout(toast.t);toast.t=setTimeout(()=>el.className='',4200)};
-  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const money=(n,c=currency)=>`${c==='ETB'?'ETB':'$'} ${Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
-  const fmt=d=>new Date(d).toLocaleString('en-ET'); const err=e=>e?.message||'Something went wrong. Please try again.';
-  const ready=()=>{if(!db)throw Error('Connect Supabase first: add your publishable key in supabase-config.js.');};
-  function modal(html){$('#modalRoot').innerHTML=`<div class="modal-backdrop" id="backdrop"><div class="modal"><button class="modal-x" id="closeModal">×</button>${html}</div></div>`;$('#closeModal').onclick=closeModal;$('#backdrop').onclick=e=>{if(e.target.id==='backdrop')closeModal()};}
-  function closeModal(){$('#modalRoot').innerHTML=''}
-  function authModal(mode='signin'){const updating=mode==='updatepassword';modal(`<div class="section-label">TATARI ACCOUNT</div><h2>${mode==='signup'?'Create your account':mode==='reset'?'Reset password':updating?'Choose a new password':'Welcome back'}</h2><p class="muted">${mode==='signup'?'Register to purchase resources, access courses and track orders.':mode==='reset'?'Enter your account email and we will send a secure reset link.':updating?'Choose a new password for your TATARI account.':'Sign in to access your purchases and learning.'}</p><form id="authForm" class="stack-form">${mode==='signup'?'<label>Full name<input name="full_name" required minlength="2"></label>':''}${mode==='reset'||mode==='signin'||mode==='signup'?'<label>Email<input name="email" type="email" required id="authEmail"></label>':''}${mode!=='reset'?`<label>${updating?'New password':'Password'}<input name="password" type="password" required minlength="8" autocomplete="new-password"></label>`:''}${updating?'<label>Confirm new password<input name="confirm_password" type="password" required minlength="8"></label>':''}<button class="btn btn-primary" type="submit">${mode==='signup'?'Create account':mode==='reset'?'Send reset link':updating?'Update password':'Sign in'}</button><p id="authFeedback" class="form-feedback"></p></form><div class="auth-switch">${mode==='signin'?'<button id="goSignup">Create an account</button><button id="goReset">Forgot password?</button>':updating?'':'<button id="goSignin">Back to sign in</button>'}</div>`);
-    $('#authForm').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget),fb=$('#authFeedback'),btn=$('button[type=submit]',e.currentTarget);btn.disabled=true;try{ready();let out;if(mode==='signup')out=await db.auth.signUp({email:f.get('email').trim(),password:f.get('password'),options:{data:{full_name:f.get('full_name').trim()}}});else if(mode==='reset')out=await db.auth.resetPasswordForEmail(f.get('email').trim(),{redirectTo:window.location.origin + window.location.pathname});else if(updating){if(f.get('password')!==f.get('confirm_password'))throw Error('The passwords do not match.');out=await db.auth.updateUser({password:f.get('password')});}else out=await db.auth.signInWithPassword({email:f.get('email').trim(),password:f.get('password')});if(out.error)throw out.error;fb.textContent=mode==='signup'&&!out.data.session?'Account created. Check your email to confirm your address.':mode==='reset'?'If the account exists, a reset email has been sent.':updating?'Password updated successfully. You can now sign in.':'Signed in successfully.';if(updating){await db.auth.signOut();session=null;setTimeout(()=>authModal('signin'),1000)}else if(out.data?.session){session=out.data.session;closeModal();await refreshUser();toast('Welcome to TATARI.');if(resumeCartAfterLogin){resumeCartAfterLogin=false;cartModal()}} }catch(x){fb.textContent=err(x);fb.className='form-feedback error'}finally{btn.disabled=false}};
-    if($('#goSignup'))$('#goSignup').onclick=()=>authModal('signup');if($('#goReset'))$('#goReset').onclick=()=>authModal('reset');if($('#goSignin'))$('#goSignin').onclick=()=>authModal('signin');
+  const cfg = window.TATARI_CONFIG || {};
+  let db = null, session = null, profile = null, role = 'customer', catalog = [], jobs = [], cart = loadSavedCart(), currency = 'ETB', currentLang = 'en';
+
+  function loadSavedCart(){ try{ return JSON.parse(localStorage.getItem('tatari_cart_v1')||'[]'); }catch(_){ return []; } }
+  function saveCart(){ try{ localStorage.setItem('tatari_cart_v1', JSON.stringify(cart)); }catch(e){ console.warn('Cart save error:', e); } }
+  function updateCartCount(){ const b=$('#cartFab'); if(b) b.innerHTML=`Cart (${cart.reduce((n,x)=>n+x.quantity,0)}) <span>▣</span>`; }
+  
+  const toast = (msg, bad=false) => {
+    const el=$('#toast'); el.textContent=msg; el.className=bad?'show bad':'show';
+    clearTimeout(toast.t); toast.t=setTimeout(()=>el.className='', 4200);
+  };
+  const esc = s => String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const money = (n, c=currency) => `${c==='ETB'?'ETB':'$'} ${Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+  const fmt = d => new Date(d).toLocaleString(currentLang==='am'?'am-ET':'en-ET');
+  const ready = () => { if(!db) throw Error('Supabase client uninitialized.'); };
+
+  function setLanguage(lang) {
+    currentLang = lang;
+    $('#langEN').classList.toggle('active', lang==='en');
+    $('#langAM').classList.toggle('active', lang==='am');
+    if (window.TATARI_I18N) window.TATARI_I18N.translate(document.body, lang);
+    renderCatalog();
   }
-  async function refreshUser(){if(!session){profile=null;role='customer';$('#accountBtn').hidden=false;$('#accountBtn').textContent='Login';$('#dashboardBtn').hidden=true;$('#logoutBtn').hidden=true;return}const [pr,rr]=await Promise.all([db.from('profiles').select('*').eq('id',session.user.id).maybeSingle(),db.from('user_roles').select('role').eq('user_id',session.user.id)]);if(pr.error)throw pr.error;if(rr.error)throw rr.error;profile=pr.data;const roles=rr.data||[];role=roles.some(x=>x.role==='admin')?'admin':roles.some(x=>x.role==='content_manager')?'content_manager':roles.some(x=>x.role==='student')?'student':'customer';$('#accountBtn').hidden=true;$('#dashboardBtn').hidden=false;$('#dashboardBtn').textContent='My account';$('#logoutBtn').hidden=false;$('#logoutBtn').textContent='Logout';}
-  async function loadCatalog(){if(!db){$('#catalog').innerHTML='<div class="empty">Connect Supabase to display live products and courses. The public website remains viewable.</div>';return}try{const [p,c]=await Promise.all([db.from('products').select('id,name,slug,description,price_etb,price_usd,category_id').eq('is_published',true).order('created_at',{ascending:false}),db.from('courses').select('id,title,slug,description,price_etb,price_usd').eq('is_published',true).order('created_at',{ascending:false})]);if(p.error)throw p.error;if(c.error)throw c.error;catalog=[...(p.data||[]).map(x=>({...x,type:'product',title:x.name})),...(c.data||[]).map(x=>({...x,type:'course'}))];renderCatalog()}catch(e){$('#catalog').innerHTML=`<div class="empty">Unable to load the catalog: ${esc(err(e))}</div>`}}
-  function renderCatalog(){const q=($('#catalogSearch').value||'').toLowerCase(),type=$('#catalogType').value;const rows=catalog.filter(x=>(type==='all'||type===x.type+'s')&&(`${x.title} ${x.description||''}`.toLowerCase().includes(q)));$('#catalog').innerHTML=rows.length?rows.map(x=>`<article class="resource-card"><div class="resource-art ${x.type}"><span>${x.type==='course'?'ACADEMY':'TATARI'}</span><b>${x.type==='course'?'↗':'✦'}</b></div><div class="resource-body"><span class="pill">${x.type==='course'?'ONLINE COURSE':'DIGITAL RESOURCE'}</span><h3>${esc(x.title)}</h3><p>${esc(x.description||'Practical resource from TATARI.')}</p><div class="resource-bottom"><strong>${(currency==='ETB'?x.price_etb:x.price_usd)==null?'Price on request':money(currency==='ETB'?x.price_etb:x.price_usd)}</strong>${(currency==='ETB'?x.price_etb:x.price_usd)==null?'<span class="muted">Contact TATARI for a quotation</span>':`<button class="btn btn-primary btn-small" type="button" data-add="${x.id}" data-type="${x.type}">Add to cart</button>`}</div></div></article>`).join(''):'<div class="empty">No digital products or online courses have been published yet. TATARI can add verified products and course details when the real files, curriculum and prices are ready.</div>';}
-  function addCart(id,type){const item=catalog.find(x=>String(x.id)===String(id)&&x.type===type);if(!item){toast('This item is no longer available. Refresh the page and try again.',true);return}const old=cart.find(x=>String(x.id)===String(id)&&x.type===type);if(old)old.quantity=Math.min(20,old.quantity+1);else cart.push({id:item.id,type,quantity:1});saveCart();updateCartCount();toast(`${item.title} added to your cart.`);}
-  function cartModal(){if(!cart.length){toast('Your cart is empty.');return}const rows=cart.map(x=>{const p=catalog.find(y=>y.id===x.id);return `<div class="cart-row"><div><b>${esc(p?.title||'Resource')}</b><small>${x.type==='course'?'Course':'Digital product'}</small></div><div class="qty"><button data-minus="${x.id}">−</button>${x.quantity}<button data-plus="${x.id}">+</button></div><strong>${money((currency==='ETB'?p?.price_etb:p?.price_usd)*x.quantity)}</strong><button class="remove" data-remove="${x.id}">×</button></div>`}).join('');modal(`<div class="section-label">YOUR SELECTION</div><h2>Your cart</h2><div class="cart-list">${rows}</div><div class="cart-total"><span>Currency</span><select id="cartCurrency"><option value="ETB" ${currency==='ETB'?'selected':''} ${cart.some(i=>{const p=catalog.find(y=>y.id===i.id);return p?.price_etb==null})?'disabled':''}>ETB</option><option value="USD" ${currency==='USD'?'selected':''} ${cart.some(i=>{const p=catalog.find(y=>y.id===i.id);return p?.price_usd==null})?'disabled':''}>USD</option></select><b>Total: ${money(cart.reduce((s,x)=>{const p=catalog.find(y=>y.id===x.id);return s+(currency==='ETB'?p.price_etb:p.price_usd)*x.quantity},0))}</b></div><label>Order note (optional)<textarea id="orderNote" rows="2"></textarea></label><button class="btn btn-primary full-btn" id="checkoutBtn">Continue to payment instructions</button>`);$('#cartCurrency').onchange=e=>{currency=e.target.value;closeModal();cartModal()};$$('[data-minus]').forEach(b=>b.onclick=()=>{const x=cart.find(i=>i.id===b.dataset.minus);x.quantity=Math.max(1,x.quantity-1);saveCart();updateCartCount();closeModal();cartModal()});$$('[data-plus]').forEach(b=>b.onclick=()=>{const x=cart.find(i=>i.id===b.dataset.plus);x.quantity=Math.min(20,x.quantity+1);saveCart();updateCartCount();closeModal();cartModal()});$$('[data-remove]').forEach(b=>b.onclick=()=>{cart=cart.filter(i=>i.id!==b.dataset.remove);saveCart();updateCartCount();closeModal();cartModal()});$('#checkoutBtn').onclick=checkout;}
-  async function checkout(){try{ready();const current=await db.auth.getSession();if(current.error)throw current.error;session=current.data?.session||null;if(!session){resumeCartAfterLogin=true;closeModal();authModal('signin');toast('Please sign in to continue. Your cart will be kept.');return}const btn=$('#checkoutBtn');btn.disabled=true;btn.textContent='Creating secure order…';const {data,error}=await db.rpc('create_customer_order',{p_currency:currency,p_items:cart.map(x=>({id:x.id,type:x.type,quantity:x.quantity})),p_customer_note:$('#orderNote').value});if(error)throw error;const order=data?.[0];if(!order)throw Error('Order was not created.');cart=[];saveCart();updateCartCount();await paymentModal(order.order_id,order.order_number,order.total,currency)}catch(e){toast(err(e),true);if($('#checkoutBtn')){$('#checkoutBtn').disabled=false;$('#checkoutBtn').textContent='Continue to payment instructions'}}}
-  async function paymentModal(orderId,number,total,curr){let settings={};const {data}=await db.from('site_settings').select('value').eq('key','payment_instructions').maybeSingle();settings=data?.value||{};modal(`<div class="section-label">MANUAL PAYMENT · ${esc(number)}</div><h2>Complete your payment</h2><p>Transfer the exact amount below using the official TATARI Telebirr details. Then submit your transaction reference and payment evidence. Access is granted only after an administrator verifies receipt.</p><div class="payment-box"><small>AMOUNT TO PAY</small><strong>${money(total,curr)}</strong><div><span>Telebirr number</span><b>${esc(settings.telebirr_number||'Not configured yet')}</b></div><div><span>Account name</span><b>${esc(settings.account_name||'Not configured yet')}</b></div><p>${esc(settings.instructions||'Please contact TATARI to confirm payment instructions.')}</p></div><form id="paymentForm" class="stack-form"><label>Transaction reference<input name="reference" required maxlength="100"></label><div class="form-grid"><label>Amount paid<input name="amount" type="number" min="0.01" step="0.01" value="${Number(total).toFixed(2)}" required></label><label>Currency<select name="currency"><option ${curr==='ETB'?'selected':''}>ETB</option><option ${curr==='USD'?'selected':''}>USD</option></select></label></div><label>Payment date<input name="payment_date" type="date" value="${new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10)}" required></label><label>Screenshot / receipt (optional)<input name="evidence" type="file" accept="image/*,.pdf"></label><button class="btn btn-primary" type="submit">Submit payment for verification</button><p id="paymentFeedback" class="form-feedback"></p></form>`);$('#paymentForm').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,fd=new FormData(f),fb=$('#paymentFeedback'),btn=$('button[type=submit]',f);btn.disabled=true;try{let path=null,file=fd.get('evidence');if(file&&file.size){if(file.size>8*1024*1024)throw Error('Evidence file must be 8 MB or smaller.');const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,'_'),key=`${session.user.id}/${orderId}/${Date.now()}-${safe}`;const up=await db.storage.from('payment-evidence').upload(key,file,{upsert:false});if(up.error)throw up.error;path=up.data.path}const ins=await db.from('payment_submissions').insert({order_id:orderId,customer_id:session.user.id,transaction_reference:fd.get('reference').trim(),amount:Number(fd.get('amount')),currency:fd.get('currency'),payment_date:fd.get('payment_date'),evidence_path:path,status:'submitted'});if(ins.error)throw ins.error;fb.textContent='Payment details submitted. Your order will be activated after verification.';btn.textContent='Submitted';btn.disabled=true;toast('Payment submitted for verification.');setTimeout(()=>{closeModal();accountModal()},1100)}catch(x){fb.textContent=err(x);fb.className='form-feedback error';btn.disabled=false}}}
-  async function accountModal(){if(!session){authModal();return}try{const [orders,ent,ens]=await Promise.all([db.from('orders').select('id,order_number,currency,subtotal,status,created_at,order_items(item_name,quantity)').eq('customer_id',session.user.id).order('created_at',{ascending:false}),db.from('download_entitlements').select('id,product_id,products(name,description)').eq('customer_id',session.user.id),db.from('enrollments').select('id,course_id,courses(title,description)').eq('customer_id',session.user.id)]);if(orders.error)throw orders.error;if(ent.error)throw ent.error;if(ens.error)throw ens.error;modal(`<div class="section-label">CUSTOMER PORTAL</div><h2>Hello, ${esc(profile?.full_name||session.user.email)}</h2><p class="muted">Manage your orders, downloads and learning access.</p><div class="portal-tabs"><button class="active" data-tab="orders">Orders</button><button data-tab="downloads">Downloads</button><button data-tab="learning">My courses</button></div><div id="portalContent">${orders.data?.length?orders.data.map(o=>`<div class="order-card"><div><b>${esc(o.order_number)}</b><small>${fmt(o.created_at)} · ${(o.order_items||[]).map(i=>esc(i.item_name)).join(', ')}</small></div><div class="order-right"><b>${money(o.subtotal,o.currency)}</b><span class="status ${o.status}">${esc(o.status.replaceAll('_',' '))}</span></div></div>`).join(''):'<div class="empty">No orders yet. Explore the Digital Store to get started.</div>'}</div><div class="portal-foot"><span>${esc(session.user.email)}</span><button id="signOut" class="btn btn-outline btn-small">Logout</button></div>`);const tabs=$$('[data-tab]');tabs.forEach(t=>t.onclick=()=>{tabs.forEach(x=>x.classList.toggle('active',x===t));const c=$('#portalContent');if(t.dataset.tab==='orders')c.innerHTML=orders.data?.length?orders.data.map(o=>`<div class="order-card"><div><b>${esc(o.order_number)}</b><small>${fmt(o.created_at)} · ${(o.order_items||[]).map(i=>esc(i.item_name)).join(', ')}</small></div><div class="order-right"><b>${money(o.subtotal,o.currency)}</b><span class="status ${o.status}">${esc(o.status.replaceAll('_',' '))}</span></div></div>`).join(''):'<div class="empty">No orders yet.</div>';if(t.dataset.tab==='downloads')c.innerHTML=ent.data?.length?ent.data.map(x=>`<div class="order-card"><div><b>${esc(x.products?.name||'Digital product')}</b><small>Purchased resource</small></div><button class="btn btn-primary btn-small" data-download="${x.product_id}">Download files</button></div>`).join(''):'<div class="empty">No downloads unlocked yet. Downloads appear after payment approval.</div>';if(t.dataset.tab==='learning')c.innerHTML=ens.data?.length?ens.data.map(x=>`<div class="order-card"><div><b>${esc(x.courses?.title||'Course')}</b><small>${esc(x.courses?.description||'Enrolled course')}</small></div><button class="btn btn-primary btn-small" data-course="${x.course_id}">Open course</button></div>`).join(''):'<div class="empty">No course enrollments yet.</div>';bindPortalActions()});bindPortalActions();$('#signOut').onclick=async()=>{await db.auth.signOut();session=null;await refreshUser();closeModal();toast('You have signed out.')}}catch(e){toast(err(e),true)}}
-  function bindPortalActions(){$$('[data-download]').forEach(b=>b.onclick=()=>downloadProduct(b.dataset.download));$$('[data-course]').forEach(b=>b.onclick=()=>courseLessons(b.dataset.course))}
-  async function downloadProduct(id){try{const {data,error}=await db.from('product_files').select('storage_path,file_name').eq('product_id',id);if(error)throw error;if(!data?.length)throw Error('No files have been attached to this product yet.');const links=[];for(const f of data){const x=await db.storage.from('product-files').createSignedUrl(f.storage_path,90);if(x.error)throw x.error;links.push({name:f.file_name,url:x.data.signedUrl})}modal(`<div class="section-label">YOUR PURCHASE</div><h2>Download resource</h2>${links.map(x=>`<p class="download-row"><b>${esc(x.name)}</b><a class="btn btn-primary btn-small" href="${esc(x.url)}" target="_blank" rel="noopener">Download</a></p>`).join('')}<p class="muted">Links expire after 90 seconds. Reopen your account to generate new links.</p>`)}catch(e){toast(err(e),true)}}
-  async function courseLessons(id){try{const {data:sections,error}=await db.from('course_sections').select('id,title,position,lessons(id,title,description,video_url,material_path,position,is_preview)').eq('course_id',id).order('position');if(error)throw error;modal(`<div class="section-label">TATARI ACADEMY</div><h2>Course learning area</h2>${(sections||[]).map(s=>`<h3>${esc(s.title)}</h3>${(s.lessons||[]).sort((a,b)=>a.position-b.position).map(l=>`<div class="lesson"><b>${esc(l.title)}</b><p>${esc(l.description||'')}</p>${l.video_url?`<a href="${esc(l.video_url)}" target="_blank" rel="noopener">Open lesson video ↗</a>`:''}${l.material_path?`<button class="btn btn-outline btn-small" data-material="${esc(l.material_path)}">Download lesson material</button>`:''}</div>`).join('')}`).join('')||'<div class="empty">Course lessons have not been added yet.</div>'}`);$$('[data-material]').forEach(b=>b.onclick=async()=>{const r=await db.storage.from('course-materials').createSignedUrl(b.dataset.material,90);if(r.error)toast(err(r.error),true);else window.open(r.data.signedUrl,'_blank','noopener')})}catch(e){toast(err(e),true)}}
-  async function submitInquiry(e){e.preventDefault();const f=e.currentTarget,fd=new FormData(f),fb=$('#inquiryFeedback');try{ready();const {error}=await db.from('inquiries').insert({customer_id:session?.user?.id||null,name:fd.get('name').trim(),email:fd.get('email').trim(),phone:fd.get('phone').trim()||null,service:fd.get('service'),message:fd.get('message').trim()});if(error)throw error;f.reset();fb.textContent='Thank you. Your inquiry has been sent to TATARI.';toast('Inquiry sent successfully.')}catch(e){fb.textContent=err(e);fb.className='form-feedback error'}}
-  async function adminModal(){if(!session){authModal();return}if(role!=='admin'){toast('Administrator access is required.',true);return}try{const [pays,orders,inquiries,products,courses]=await Promise.all([db.from('payment_submissions').select('*,orders(order_number,subtotal,currency,customer_id)').order('created_at',{ascending:false}),db.from('orders').select('id,order_number,customer_id,currency,subtotal,status,created_at').order('created_at',{ascending:false}).limit(50),db.from('inquiries').select('*').order('created_at',{ascending:false}).limit(50),db.from('products').select('*').order('created_at',{ascending:false}),db.from('courses').select('*').order('created_at',{ascending:false})]);for(const x of [pays,orders,inquiries,products,courses])if(x.error)throw x.error;modal(`<div class="section-label">TATARI CONTROL CENTRE</div><h2>Administration</h2><div class="admin-tabs"><button class="active" data-admin="payments">Payments (${pays.data.length})</button><button data-admin="catalog">Catalog</button><button data-admin="orders">Orders (${orders.data.length})</button><button data-admin="inquiries">Inquiries (${inquiries.data.length})</button><button data-admin="settings">Settings</button></div><div id="adminContent">${paymentHTML(pays.data)}</div>`);$$('[data-admin]').forEach(b=>b.onclick=()=>{ $$('.admin-tabs button').forEach(x=>x.classList.toggle('active',x===b));const c=$('#adminContent');if(b.dataset.admin==='payments')c.innerHTML=paymentHTML(pays.data);if(b.dataset.admin==='catalog')c.innerHTML=catalogAdminHTML(products.data,courses.data);if(b.dataset.admin==='orders')c.innerHTML=ordersHTML(orders.data);if(b.dataset.admin==='inquiries')c.innerHTML=inquiryHTML(inquiries.data);if(b.dataset.admin==='settings')settingsHTML(c);bindAdmin(pays.data,inquiries.data);});bindAdmin(pays.data,inquiries.data)}catch(e){toast(err(e),true)}}
-  function ordersHTML(rows){return rows.length?rows.map(o=>`<div class="admin-row"><div><b>${esc(o.order_number)}</b><small>${money(o.subtotal,o.currency)} · ${fmt(o.created_at)} · Customer ${esc(o.customer_id)}</small><span class="status ${o.status}">${esc(o.status.replaceAll('_',' '))}</span></div></div>`).join(''):'<div class="empty">No orders yet.</div>'}
-  function paymentHTML(rows){return rows.length?rows.map(p=>`<div class="admin-row"><div><b>${esc(p.orders?.order_number||p.order_id)}</b><small>${esc(p.transaction_reference)} · ${money(p.amount,p.currency)} · ${fmt(p.created_at)}</small><span class="status ${p.status}">${esc(p.status)}</span>${p.evidence_path?`<button class="text-button" data-evidence="${esc(p.evidence_path)}">View evidence</button>`:''}</div><div class="admin-actions">${['submitted','under_review'].includes(p.status)?`<button class="btn btn-primary btn-small" data-review="${p.id}" data-decision="approved">Approve</button><button class="btn btn-outline btn-small" data-review="${p.id}" data-decision="rejected">Reject</button>`:''}</div></div>`).join(''):'<div class="empty">No payment submissions.</div>'}
-  function catalogAdminHTML(ps,cs){return `<div class="admin-create"><h3>Add a digital product</h3><form id="newProduct" class="stack-form"><label>Product name (English)<input name="name" required></label><label>Slug<input name="slug" required></label><label>Description (English)<textarea name="description" rows="2"></textarea></label><div class="form-grid"><label>Price ETB<input name="price_etb" type="number" min="0" step="0.01"></label><label>Price USD<input name="price_usd" type="number" min="0" step="0.01"></label></div><label><input name="published" type="checkbox" value="yes"> Publish immediately (only after real files and prices are ready)</label><button class="btn btn-primary">Save product</button></form><hr><h3>Add a course</h3><form id="newCourse" class="stack-form"><label>Course title (English)<input name="title" required></label><label>Slug<input name="slug" required></label><label>Description (English)<textarea name="description" rows="2"></textarea></label><div class="form-grid"><label>Price ETB<input name="price_etb" type="number" min="0" step="0.01"></label><label>Price USD<input name="price_usd" type="number" min="0" step="0.01"></label></div><label><input name="published" type="checkbox" value="yes"> Publish immediately (only after curriculum and materials are ready)</label><button class="btn btn-primary">Save course</button></form></div><h3>Existing products</h3>${ps.map(p=>`<div class="admin-row"><div><b>${esc(p.name)}</b><small>${money(p.price_etb,'ETB')} · ${money(p.price_usd,'USD')}</small><form class="inline-upload" data-product-upload="${p.id}"><input type="file" name="files" multiple required><button class="btn btn-outline btn-small">Upload product files</button></form></div><button class="btn btn-outline btn-small" data-toggle-p="${p.id}" data-pub="${!p.is_published}">${p.is_published?'Unpublish':'Publish'}</button></div>`).join('')||'<p class="muted">No products yet.</p>'}<h3>Existing courses</h3>${cs.map(c=>`<div class="admin-row"><div><b>${esc(c.title)}</b><small>${money(c.price_etb,'ETB')} · ${money(c.price_usd,'USD')}</small><button class="btn btn-outline btn-small" data-manage-course="${c.id}">Manage sections and lessons</button></div><button class="btn btn-outline btn-small" data-toggle-c="${c.id}" data-pub="${!c.is_published}">${c.is_published?'Unpublish':'Publish'}</button></div>`).join('')||'<p class="muted">No courses yet.</p>'}`}
-  async function manageCourse(id){try{const {data:course,error:ce}=await db.from('courses').select('*').eq('id',id).single();if(ce)throw ce;const {data:sections,error}=await db.from('course_sections').select('id,title,position,lessons(id,title,description,video_url,material_path,is_preview,position)').eq('course_id',id).order('position');if(error)throw error;modal(`<div class="section-label">COURSE CONTENT</div><h2>${esc(course.title)}</h2><form id="newSection" class="stack-form"><label>New section title<input name="title" required></label><button class="btn btn-primary">Add section</button></form><hr>${(sections||[]).map(sec=>`<section class="admin-create"><h3>${esc(sec.title)}</h3>${(sec.lessons||[]).sort((a,b)=>a.position-b.position).map(l=>`<div class="admin-row"><div><b>${esc(l.title)}</b><small>${esc(l.description||'')}${l.video_url?' · Video link added':''}${l.material_path?' · Material file added':''}</small></div><span class="status">${l.is_preview?'Preview':'Enrolled only'}</span></div>`).join('')}<form class="stack-form lesson-form" data-section="${sec.id}"><h4>Add lesson to this section</h4><label>Lesson title<input name="title" required></label><label>Description<textarea name="description" rows="2"></textarea></label><label>Video URL (optional)<input name="video_url" type="url" placeholder="https://..."></label><label>Lesson material (optional)<input name="material" type="file"></label><label><input name="is_preview" type="checkbox" value="yes"> Free preview lesson</label><button class="btn btn-primary">Add lesson</button></form></section>`).join('')||'<p class="muted">Create the first section to begin adding lessons.</p>'}`);$('#newSection').onsubmit=async e=>{e.preventDefault();const sf=new FormData(e.currentTarget),title=sf.get('title').trim();const r=await db.from('course_sections').insert({course_id:id,title,position:(sections||[]).length+1});if(r.error)toast(err(r.error),true);else manageCourse(id)};$$('.lesson-form').forEach(form=>form.onsubmit=e=>saveLesson(e,form.dataset.section));}catch(e){toast(err(e),true)}}
-  async function saveLesson(e,sectionId){e.preventDefault();const f=e.currentTarget,fd=new FormData(f),btn=f.querySelector('button[type=submit],button');btn.disabled=true;try{let materialPath=null;const file=fd.get('material');if(file&&file.size){if(file.size>50*1024*1024)throw Error('Lesson material must be 50 MB or smaller.');const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,'_'),path=`${session.user.id}/${sectionId}/${Date.now()}-${safe}`;const up=await db.storage.from('course-materials').upload(path,file,{upsert:false});if(up.error)throw up.error;materialPath=up.data.path;}const r=await db.from('lessons').insert({section_id:sectionId,title:fd.get('title').trim(),description:fd.get('description').trim()||null,video_url:fd.get('video_url').trim()||null,material_path:materialPath,is_preview:fd.get('is_preview')==='yes'});if(r.error)throw r.error;toast('Lesson added.');manageCourse((await db.from('course_sections').select('course_id').eq('id',sectionId).single()).data.course_id)}catch(x){toast(err(x),true);btn.disabled=false}}
-  async function uploadProductFiles(e,productId){e.preventDefault();const form=e.currentTarget,files=[...form.querySelector('[name="files"]').files],btn=form.querySelector('button');btn.disabled=true;try{for(const file of files){if(file.size>50*1024*1024)throw Error(`${file.name} exceeds the 50 MB file limit.`);const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,'_'),path=`${productId}/${Date.now()}-${safe}`;const up=await db.storage.from('product-files').upload(path,file,{upsert:false});if(up.error)throw up.error;const row=await db.from('product_files').insert({product_id:productId,storage_path:up.data.path,file_name:file.name});if(row.error)throw row.error;}toast('Product files uploaded.');adminModal()}catch(x){toast(err(x),true);btn.disabled=false}}
-  function inquiryHTML(rows){return rows.length?rows.map(i=>`<div class="admin-row"><div><b>${esc(i.name)} · ${esc(i.service||'General')}</b><small>${esc(i.email)} · ${esc(i.phone||'')} · ${fmt(i.created_at)}<br>${esc(i.message)}</small><span class="status">${esc(i.status)}</span></div><select data-inquiry="${i.id}">${['new','contacted','consultation_scheduled','proposal_sent','negotiation','accepted','rejected','completed'].map(s=>`<option ${i.status===s?'selected':''}>${s}</option>`).join('')}</select></div>`).join(''):'<div class="empty">No inquiries received.</div>'}
-  async function settingsHTML(c){const {data}=await db.from('site_settings').select('value').eq('key','payment_instructions').maybeSingle(),v=data?.value||{};c.innerHTML=`<h3>Telebirr payment instructions</h3><p class="muted">These details appear to customers at checkout. Enter only the official business payment information.</p><form id="settingsForm" class="stack-form"><label>Telebirr number<input name="telebirr_number" value="${esc(v.telebirr_number||'')}"></label><label>Account name<input name="account_name" value="${esc(v.account_name||'')}"></label><label>Instructions<textarea name="instructions" rows="4">${esc(v.instructions||'')}</textarea></label><button class="btn btn-primary">Save payment settings</button></form>`;$('#settingsForm').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget),value={telebirr_number:f.get('telebirr_number').trim(),account_name:f.get('account_name').trim(),instructions:f.get('instructions').trim()};const r=await db.from('site_settings').upsert({key:'payment_instructions',value,updated_by:session.user.id});if(r.error)toast(err(r.error),true);else toast('Payment instructions updated.')};}
-  function bindAdmin(payments,inquiries){$$('[data-review]').forEach(b=>b.onclick=async()=>{const note=prompt(`Optional admin note for ${b.dataset.decision}:`)||null;if(!confirm(`Confirm ${b.dataset.decision} payment? Verify the Telebirr transaction independently first.`))return;const r=await db.rpc('review_payment',{p_payment_id:b.dataset.review,p_decision:b.dataset.decision,p_admin_note:note});if(r.error)toast(err(r.error),true);else{toast(`Payment ${b.dataset.decision}.`);adminModal()}});$$('[data-evidence]').forEach(b=>b.onclick=async()=>{const r=await db.storage.from('payment-evidence').createSignedUrl(b.dataset.evidence,120);if(r.error)toast(err(r.error),true);else window.open(r.data.signedUrl,'_blank','noopener')});$$('[data-inquiry]').forEach(s=>s.onchange=async()=>{const r=await db.from('inquiries').update({status:s.value}).eq('id',s.dataset.inquiry);if(r.error)toast(err(r.error),true);else toast('Inquiry status updated.')});$$('[data-toggle-p]').forEach(b=>b.onclick=async()=>{const r=await db.from('products').update({is_published:b.dataset.pub==='true'}).eq('id',b.dataset.toggleP);if(r.error)toast(err(r.error),true);else{toast('Product visibility updated.');adminModal()}});$$('[data-toggle-c]').forEach(b=>b.onclick=async()=>{const r=await db.from('courses').update({is_published:b.dataset.pub==='true'}).eq('id',b.dataset.toggleC);if(r.error)toast(err(r.error),true);else{toast('Course visibility updated.');adminModal()}});if($('#newProduct'))$('#newProduct').onsubmit=e=>saveCatalog(e,'products');if($('#newCourse'))$('#newCourse').onsubmit=e=>saveCatalog(e,'courses');$$('[data-product-upload]').forEach(f=>f.onsubmit=e=>uploadProductFiles(e,f.dataset.productUpload));$$('[data-manage-course]').forEach(b=>b.onclick=()=>manageCourse(b.dataset.manageCourse))}
-  async function saveCatalog(e,table){e.preventDefault();const f=new FormData(e.currentTarget),isCourse=table==='courses',row={...(isCourse?{title:f.get('title').trim()}:{name:f.get('name').trim()}),slug:f.get('slug').trim().toLowerCase().replace(/[^a-z0-9-]/g,'-'),description:f.get('description').trim(),price_etb:f.get('price_etb')?Number(f.get('price_etb')):null,price_usd:f.get('price_usd')?Number(f.get('price_usd')):null,is_published:f.get('published')==='yes'};const r=await db.from(table).insert(row);if(r.error)toast(err(r.error),true);else{toast('Saved successfully.');adminModal();loadCatalog()}}
-  async function init(){ $('#year').textContent=new Date().getFullYear();$('#mobileMenu').onclick=()=>$('#nav').classList.toggle('open');$('#nav').onclick=e=>{if(e.target.tagName==='A')$('#nav').classList.remove('open')};$('#accountBtn').onclick=()=>authModal();$('#dashboardBtn').onclick=()=>role==='admin'?adminModal():accountModal();$('#logoutBtn').onclick=async()=>{try{ready();$('#logoutBtn').disabled=true;const {error}=await db.auth.signOut({scope:'local'});if(error)throw error;session=null;profile=null;role='customer';closeModal();await refreshUser();toast('You have been signed out.');}catch(e){toast(err(e),true)}finally{$('#logoutBtn').disabled=false}};$('#catalogSearch').oninput=renderCatalog;$('#catalogType').onchange=renderCatalog;$('#inquiryForm').onsubmit=submitInquiry;document.documentElement.lang='en';if(cfg.url&&cfg.publishableKey&&!cfg.publishableKey.includes('PASTE_')&&window.supabase?.createClient){try{db=window.supabase.createClient(cfg.url,cfg.publishableKey);const {data,error}=await db.auth.getSession();if(error)throw error;session=data?.session||null;await refreshUser();db.auth.onAuthStateChange((event,s)=>{session=s;Promise.resolve().then(refreshUser).catch(e=>{console.error('TATARI session refresh failed:',e);toast(err(e),true)});if(event==='PASSWORD_RECOVERY'&&!recoveryModalOpened){recoveryModalOpened=true;setTimeout(()=>authModal('updatepassword'),0);}});const recoveryLink=window.location.hash.includes('type=recovery')||new URLSearchParams(window.location.search).get('type')==='recovery';if(recoveryLink&&!recoveryModalOpened){recoveryModalOpened=true;setTimeout(()=>authModal('updatepassword'),0);}}catch(e){db=null;console.error('TATARI Supabase initialization failed:',e);$('#catalog').innerHTML=`<div class="empty">Supabase connection failed: ${esc(err(e))}. Check the project URL, publishable key and network connection.</div>`;$('#accountBtn').title='Supabase connection needs configuration';}}else{ $('#accountBtn').title='Supabase SDK or configuration is missing';$('#catalog').innerHTML='<div class="empty">Supabase is not configured. Check supabase-config.js and the Supabase JavaScript library connection.</div>'; }await loadCatalog();const cartButton=document.createElement('button');cartButton.type='button';cartButton.id='cartFab';cartButton.className='cart-fab';cartButton.innerHTML='Cart (0) <span>▣</span>';cartButton.onclick=cartModal;document.body.append(cartButton);updateCartCount();$('#catalog').addEventListener('click',e=>{const b=e.target.closest('button[data-add]');if(!b)return;e.preventDefault();e.stopPropagation();addCart(b.getAttribute('data-add'),b.getAttribute('data-type'));});}
-  document.addEventListener('DOMContentLoaded',init);
+
+  function modal(html){
+    $('#modalRoot').innerHTML = `<div class="modal-backdrop" id="backdrop"><div class="modal"><button class="modal-x" id="closeModal">×</button>${html}</div></div>`;
+    $('#closeModal').onclick = closeModal;
+    $('#backdrop').onclick = e => { if(e.target.id==='backdrop') closeModal(); };
+    if (window.TATARI_I18N) window.TATARI_I18N.translate($('#modalRoot'), currentLang);
+  }
+  function closeModal(){ $('#modalRoot').innerHTML = ''; }
+
+  async function loadData() {
+    if(!db) return;
+    try {
+      const [p, c, j] = await Promise.all([
+        db.from('products').select('*').eq('is_published', true).order('created_at', {ascending: false}),
+        db.from('courses').select('*').eq('is_published', true).order('created_at', {ascending: false}),
+        db.from('jobs').select('*').eq('status', 'open').order('created_at', {ascending: false})
+      ]);
+      catalog = [
+        ...(p.data||[]).map(x=>({...x, type:'product', displayTitle: currentLang==='am' && x.name_am ? x.name_am : x.name})),
+        ...(c.data||[]).map(x=>({...x, type:'course', displayTitle: currentLang==='am' && x.title_am ? x.title_am : x.title}))
+      ];
+      jobs = j.data || [];
+      renderCatalog();
+    } catch(e) {
+      console.error('Data loading error:', e);
+    }
+  }
+
+  function renderCatalog() {
+    const q = ($('#catalogSearch').value||'').toLowerCase();
+    const type = $('#catalogType').value;
+
+    let html = '';
+    if(type === 'all' || type === 'products' || type === 'courses') {
+      const filteredCat = catalog.filter(x => (type==='all' || type===x.type+'s') && `${x.displayTitle} ${x.description||''}`.toLowerCase().includes(q));
+      html += filteredCat.map(x => `
+        <article class="resource-card">
+          <div class="resource-art ${x.type}"><span>${x.type==='course'?'ACADEMY':'TATARI'}</span><b>✦</b></div>
+          <div class="resource-body">
+            <span class="pill">${x.type==='course'?'ONLINE COURSE':'DIGITAL RESOURCE'}</span>
+            <h3>${esc(x.displayTitle)}</h3>
+            <p>${esc(x.description||'')}</p>
+            <div class="resource-bottom">
+              <strong>${money(currency==='ETB'?x.price_etb:x.price_usd)}</strong>
+              <button class="btn btn-primary btn-small" data-add="${x.id}" data-type="${x.type}">Add to cart</button>
+            </div>
+          </div>
+        </article>`).join('');
+    }
+    
+    if(type === 'all' || type === 'jobs') {
+      const filteredJobs = jobs.filter(x => `${x.title_en} ${x.description_en} ${x.title_am||''}`.toLowerCase().includes(q));
+      html += filteredJobs.map(j => `
+        <article class="resource-card job-card">
+          <div class="resource-art job"><span>FREELANCE JOB</span><b>💼</b></div>
+          <div class="resource-body">
+            <span class="pill">${esc(j.category||'General')}</span>
+            <h3>${esc(currentLang==='am'&&j.title_am ? j.title_am : j.title_en)}</h3>
+            <p>${esc(currentLang==='am'&&j.description_am ? j.description_am : j.description_en||'')}</p>
+            <div class="resource-bottom">
+              <strong>Est: ${money(j.budget_min)} - ${money(j.budget_max)}</strong>
+              <button class="btn btn-outline btn-small" data-job-id="${j.id}">View & Apply</button>
+            </div>
+          </div>
+        </article>`).join('');
+    }
+
+    $('#catalog').innerHTML = html || '<div class="empty">No matching products, courses, or jobs found.</div>';
+    bindCatalogEvents();
+  }
+
+  function bindCatalogEvents() {
+    $$('[data-add]').forEach(b => b.onclick = () => addCart(b.dataset.add, b.dataset.type));
+    $$('[data-job-id]').forEach(b => b.onclick = () => openJobDetails(b.dataset.jobId));
+  }
+
+  function addCart(id, type) {
+    const item = catalog.find(x => String(x.id)===String(id) && x.type===type);
+    if(!item) return;
+    const existing = cart.find(x => String(x.id)===String(id) && x.type===type);
+    if(existing) existing.quantity += 1;
+    else cart.push({id: item.id, type, quantity: 1});
+    saveCart(); updateCartCount();
+    toast(`${item.displayTitle} added to cart.`);
+  }
+
+  async function openJobDetails(jobId) {
+    const job = jobs.find(j => String(j.id) === String(jobId));
+    if(!job) return;
+    modal(`
+      <div class="section-label">FREELANCE OPPORTUNITY</div>
+      <h2>${esc(currentLang==='am'&&job.title_am ? job.title_am : job.title_en)}</h2>
+      <p class="muted">Category: ${esc(job.category)} | Budget: ${money(job.budget_min)} - ${money(job.budget_max)} (${esc(job.currency)})</p>
+      <div class="job-description-box">
+        <p>${esc(currentLang==='am'&&job.description_am ? job.description_am : job.description_en)}</p>
+      </div>
+      <hr>
+      <h3>Submit Proposal</h3>
+      <form id="proposalForm" class="stack-form">
+        <label>Proposed Bid Rate (${job.currency})<input name="bid_amount" type="number" step="0.01" required></label>
+        <label>Estimated Delivery (Days)<input name="delivery_days" type="number" required></label>
+        <label>Cover Letter / Proposal Details<textarea name="cover_letter" rows="4" required></textarea></label>
+        <button class="btn btn-primary" type="submit">Submit Proposal</button>
+      </form>
+    `);
+
+    $('#proposalForm').onsubmit = async e => {
+      e.preventDefault();
+      try {
+        ready();
+        const current = await db.auth.getSession();
+        if(!current.data?.session) {
+          toast('Please sign in to submit a proposal.', true);
+          return;
+        }
+        const fd = new FormData(e.currentTarget);
+        const { error } = await db.from('proposals').insert({
+          job_id: job.id,
+          freelancer_id: current.data.session.user.id,
+          bid_amount: Number(fd.get('bid_amount')),
+          delivery_days: Number(fd.get('delivery_days')),
+          cover_letter: fd.get('cover_letter').trim()
+        });
+        if(error) throw error;
+        toast('Proposal submitted successfully!');
+        closeModal();
+      } catch(err) {
+        toast(err.message, true);
+      }
+    };
+  }
+
+  function postJobModal() {
+    modal(`
+      <div class="section-label">POST A FREELANCE JOB</div>
+      <h2>Create Job Listing</h2>
+      <form id="createJobForm" class="stack-form">
+        <label>Job Title (English)<input name="title_en" required></label>
+        <label>Job Title (Amharic)<input name="title_am"></label>
+        <label>Category<input name="category" placeholder="e.g., HR Analytics, Web Dev" required></label>
+        <div class="form-grid">
+          <label>Budget Min<input name="budget_min" type="number" step="0.01" required></label>
+          <label>Budget Max<input name="budget_max" type="number" step="0.01" required></label>
+        </div>
+        <label>Description (English)<textarea name="description_en" rows="3" required></textarea></label>
+        <label>Description (Amharic)<textarea name="description_am" rows="3"></textarea></label>
+        <button class="btn btn-primary" type="submit">Publish Job</button>
+      </form>
+    `);
+
+    $('#createJobForm').onsubmit = async e => {
+      e.preventDefault();
+      try {
+        ready();
+        const current = await db.auth.getSession();
+        if(!current.data?.session) {
+          toast('Please sign in to post a job.', true);
+          return;
+        }
+        const fd = new FormData(e.currentTarget);
+        const { error } = await db.from('jobs').insert({
+          client_id: current.data.session.user.id,
+          title_en: fd.get('title_en').trim(),
+          title_am: fd.get('title_am').trim() || null,
+          category: fd.get('category').trim(),
+          budget_min: Number(fd.get('budget_min')),
+          budget_max: Number(fd.get('budget_max')),
+          description_en: fd.get('description_en').trim(),
+          description_am: fd.get('description_am').trim() || null
+        });
+        if(error) throw error;
+        toast('Job posted successfully.');
+        closeModal();
+        await loadData();
+      } catch(err) {
+        toast(err.message, true);
+      }
+    };
+  }
+
+  async function init() {
+    $('#year').textContent = new Date().getFullYear();
+    $('#langEN').onclick = () => setLanguage('en');
+    $('#langAM').onclick = () => setLanguage('am');
+    $('#postJobBtn').onclick = () => postJobModal();
+    $('#catalogSearch').oninput = renderCatalog;
+    $('#catalogType').onchange = renderCatalog;
+
+    if(cfg.url && cfg.publishableKey && window.supabase?.createClient) {
+      db = window.supabase.createClient(cfg.url, cfg.publishableKey);
+      const { data } = await db.auth.getSession();
+      session = data?.session || null;
+    }
+    await loadData();
+    updateCartCount();
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
 })();

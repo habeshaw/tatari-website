@@ -1,6 +1,5 @@
-// Browser-safe Supabase configuration for the existing TATARI project.
-// Publishable key is intended for browser use; never add a service_role/secret key here.
+// Supabase configuration details
 window.TATARI_CONFIG = {
-  url: 'https://rcloqzhlwcmmlnhmgjyc.supabase.co',
-  publishableKey: 'sb_publishable_CMSXpV7Ar8Ji9XuMrl0hgg_PUfJ64jc'
+  url: "https://rcloqzhlwcmmlnhmgjyc.supabase.co",
+  publishableKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjbG9xemhsd2NtbWxuaG1nanljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzA2MzI2NzUsImV4cCI6MjA0NjIwODY3NX0.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
 };
