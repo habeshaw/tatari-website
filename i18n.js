@@ -1,4 +1,3 @@
-/* TATARI Bilingual Interface Dictionary (English & Amharic) */
 (() => {
   const am = {
     'Open menu':'ምናሌ ክፈት','About':'ስለ እኛ','Services':'አገልግሎቶች','Solutions':'መፍትሄዎች','Academy':'አካዳሚ','Digital Store':'ዲጂታል መደብር','Job Board':'የስራ ሰሌዳ','Freelance Hub':'የፍሪላንስ ማዕከል','Testimonials':'ምስክርነቶች','Subscription Plans':'የደንበኝነት ምዝገባ','Contact':'ያግኙን','Sign in':'ግባ','Login':'ግባ','Logout':'ውጣ','Log out':'ውጣ','My account':'የእኔ መለያ','Admin Portal':'የአስተዳዳሪ ፖርታል',
