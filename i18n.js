@@ -18,8 +18,7 @@
     "LET'S WORK TOGETHER":'አብረን እንስራ','What can we help':'ምን ልንረዳዎ','you achieve?':'እንዲያሳኩ እንፈልጋለን?','Send an inquiry':'ጥያቄ ይላኩ','Your name':'ሙሉ ስም','Email address':'ኢሜይል አድራሻ','Phone (optional)':'ስልክ (አማራጭ)',"I'm interested in":'የምፈልገው አገልግሎት','Consulting':'የማማከር አገልግሎት','Professional training':'ሙያዊ ስልጠና','Partnership':'አጋርነት','Other':'ሌላ','How can we help?':'እንዴት ልንረዳዎ?','Send inquiry ↗':'ጥያቄ ይላኩ ↗',
     'Create your account':'መለያ ይፍጠሩ','Add to cart':'ወደ ጋሪ ጨምር','Price on request':'ዋጋውን ይጠይቁ','Contact TATARI for a quotation':'ዋጋ ለማግኘት ታታሪን ያግኙ',
     'YOUR SELECTION':'የመረጡት','Order note (optional)':'የትዕዛዝ ማስታወሻ (አማራጭ)','Currency':'ምንዛሬ','Total:':'ጠቅላላ፡','Course':'ኮርስ','Digital product':'ዲጂታል ምርት','Job Posting':'የስራ ማስታወቂያ',
-    'MANUAL PAYMENT':'በእጅ ክፍያ','Complete your payment':'ክፍያዎን ያጠናቅቁ','CUSTOMER PORTAL':'የደንበኛ መለያ','Orders':'ትዕዛዞች','Downloads':'የወረዱ ፋይሎች','My courses':'ኮርሶቼ','My Jobs & Proposals':'ስራዎቼ እና ማመልከቻዎቼ','Sign out':'ውጣ',
-    'TATARI CONTROL CENTRE':'የታታሪ አስተዳደር ማዕከል','Administration':'አስተዳደር','Payments':'ክፍያዎች','Catalog':'የምርት ዝርዝር','Jobs Admin':'የስራዎች አስተዳደር','Inquiries':'ጥያቄዎች','Settings':'ቅንብሮች'
+    'MANUAL PAYMENT':'በእጅ ክፍያ','Complete your payment':'ክፍያዎን ያጠናቅቁ','CUSTOMER PORTAL':'የደንበኛ መለያ','Orders':'ትዕዛዞች','Downloads':'የወረዱ ፋይሎች','My courses':'ኮርሶቼ','Sign out':'ውጣ'
   };
   const en = Object.fromEntries(Object.entries(am).map(([k,v])=>[v,k]));
   window.TATARI_I18N = {

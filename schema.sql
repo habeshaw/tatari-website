@@ -1,11 +1,11 @@
--- Extend products & courses tables with Amharic columns
+-- Database setup for TATARI Consulting, Store, and Job Board
+
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS name_am TEXT;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS description_am TEXT;
 
 ALTER TABLE public.courses ADD COLUMN IF NOT EXISTS title_am TEXT;
 ALTER TABLE public.courses ADD COLUMN IF NOT EXISTS description_am TEXT;
 
--- Create Jobs table
 CREATE TABLE IF NOT EXISTS public.jobs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     client_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -23,7 +23,6 @@ CREATE TABLE IF NOT EXISTS public.jobs (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Create Proposals table
 CREATE TABLE IF NOT EXISTS public.proposals (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     job_id UUID REFERENCES public.jobs(id) ON DELETE CASCADE,
@@ -35,18 +34,12 @@ CREATE TABLE IF NOT EXISTS public.proposals (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Row Level Security (RLS) Policies
 ALTER TABLE public.jobs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.proposals ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can view open jobs" ON public.jobs
-    FOR SELECT USING (status = 'open' OR auth.uid() = client_id);
-
-CREATE POLICY "Authenticated users can create jobs" ON public.jobs
-    FOR INSERT WITH CHECK (auth.uid() = client_id);
-
-CREATE POLICY "Job owners can update jobs" ON public.jobs
-    FOR UPDATE USING (auth.uid() = client_id);
+CREATE POLICY "Anyone can view open jobs" ON public.jobs FOR SELECT USING (status = 'open' OR auth.uid() = client_id);
+CREATE POLICY "Authenticated users can create jobs" ON public.jobs FOR INSERT WITH CHECK (auth.uid() = client_id);
+CREATE POLICY "Job owners can update jobs" ON public.jobs FOR UPDATE USING (auth.uid() = client_id);
 
 CREATE POLICY "Freelancers can view own proposals or job owners view proposals" ON public.proposals
     FOR SELECT USING (
@@ -54,5 +47,4 @@ CREATE POLICY "Freelancers can view own proposals or job owners view proposals" 
         EXISTS (SELECT 1 FROM public.jobs WHERE id = proposals.job_id AND client_id = auth.uid())
     );
 
-CREATE POLICY "Authenticated freelancers can submit proposals" ON public.proposals
-    FOR INSERT WITH CHECK (auth.uid() = freelancer_id);
+CREATE POLICY "Authenticated freelancers can submit proposals" ON public.proposals FOR INSERT WITH CHECK (auth.uid() = freelancer_id);
