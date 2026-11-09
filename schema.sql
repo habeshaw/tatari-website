@@ -1,8 +1,13 @@
--- Database setup for TATARI Search Engine: User Roles, Applications, Exports & Subscriptions
+-- =========================================================================
+-- TATARI CONSULTING: SUPABASE DATABASE MIGRATION SCHEMA (FINAL v3)
+-- =========================================================================
 
 INSERT INTO storage.buckets (id, name, public) 
 VALUES ('public-logos', 'public-logos', true) 
 ON CONFLICT (id) DO NOTHING;
+
+DROP POLICY IF EXISTS "Public Access for Logos" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated users can upload logos" ON storage.objects;
 
 CREATE POLICY "Public Access for Logos" ON storage.objects FOR SELECT USING (bucket_id = 'public-logos');
 CREATE POLICY "Authenticated users can upload logos" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'public-logos' AND auth.role() = 'authenticated');
@@ -13,6 +18,15 @@ CREATE TABLE IF NOT EXISTS public.user_roles (
     role TEXT NOT NULL DEFAULT 'normal_user',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(user_id, role)
+);
+
+CREATE TABLE IF NOT EXISTS public.subscriptions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE,
+    plan_tier TEXT DEFAULT 'free',
+    status TEXT DEFAULT 'active',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS public.career_jobs (
@@ -82,24 +96,28 @@ CREATE TABLE IF NOT EXISTS public.testimonials (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS public.subscriptions (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE,
-    plan_tier TEXT DEFAULT 'free',
-    status TEXT DEFAULT 'active',
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
 ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.career_jobs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.career_applications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.jobs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.proposals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.testimonials ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Anyone can view roles" ON public.user_roles;
+DROP POLICY IF EXISTS "Users modify subscription" ON public.subscriptions;
+DROP POLICY IF EXISTS "Anyone can view open career jobs" ON public.career_jobs;
+DROP POLICY IF EXISTS "Authenticated users post career jobs" ON public.career_jobs;
+DROP POLICY IF EXISTS "Applicants, recruiters or admins view applications" ON public.career_applications;
+DROP POLICY IF EXISTS "Authenticated users submit job applications" ON public.career_applications;
+DROP POLICY IF EXISTS "Admins update job applications" ON public.career_applications;
+DROP POLICY IF EXISTS "Anyone can view open freelance jobs" ON public.jobs;
+DROP POLICY IF EXISTS "Authenticated users post freelance jobs" ON public.jobs;
+DROP POLICY IF EXISTS "Anyone can view testimonials" ON public.testimonials;
 
 CREATE POLICY "Anyone can view roles" ON public.user_roles FOR SELECT USING (true);
+CREATE POLICY "Users modify subscription" ON public.subscriptions FOR ALL USING (auth.uid() = user_id);
+
 CREATE POLICY "Anyone can view open career jobs" ON public.career_jobs FOR SELECT USING (status = 'open' OR auth.uid() = recruiter_id);
 CREATE POLICY "Authenticated users post career jobs" ON public.career_jobs FOR INSERT WITH CHECK (auth.uid() = recruiter_id);
 
@@ -111,5 +129,5 @@ CREATE POLICY "Admins update job applications" ON public.career_applications FOR
 
 CREATE POLICY "Anyone can view open freelance jobs" ON public.jobs FOR SELECT USING (status = 'open' OR auth.uid() = client_id);
 CREATE POLICY "Authenticated users post freelance jobs" ON public.jobs FOR INSERT WITH CHECK (auth.uid() = client_id);
+
 CREATE POLICY "Anyone can view testimonials" ON public.testimonials FOR SELECT USING (true);
-CREATE POLICY "Users modify subscription" ON public.subscriptions FOR ALL USING (auth.uid() = user_id);
