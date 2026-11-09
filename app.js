@@ -1,13 +1,11 @@
 (() => {
   const $ = (s, r=document) => r.querySelector(s);
   const $$ = (s, r=document) => [...r.querySelectorAll(s)];
-  const cfg = window.TATARI_CONFIG || {};
 
-  let db = null,
-      session = { user: { id: 'demo-user-123', email: 'user@tatari.et' } },
+  let session = { user: { id: 'demo-user-123', email: 'user@tatari.et' } },
       profile = { full_name: 'Demo Member' },
-      role = 'normal_user', // 'normal_user', 'employer', 'admin'
-      subscriptionPlan = 'free', // 'free', 'starter', 'pro', 'enterprise'
+      role = 'normal_user',
+      subscriptionPlan = 'free',
       selectedModule = 'all',
       products = [], courses = [], jobListings = [], freelanceProjects = [], testimonials = [],
       applications = [], proposals = [],
@@ -44,7 +42,7 @@
 
   function loadSavedCart(){ try{ const v = JSON.parse(localStorage.getItem('tatari_cart_v1')||'[]'); return Array.isArray(v)?v.filter(x=>x&&typeof x.id==='string'&&['product','course'].includes(x.type)&&Number.isInteger(x.quantity)&&x.quantity>=1&&x.quantity<=20):[]; }catch(_){ return []; } }
   function saveCart(){ try{ localStorage.setItem('tatari_cart_v1', JSON.stringify(cart)); }catch(e){ console.warn('Cart save error:', e); } }
-  function updateCartCount(){ const b=$('#cartFab'); if(b) b.innerHTML=`Cart (${cart.reduce((n,x)=>n+x.quantity,0)}) <span>▣</span>`; }
+  function updateCartCount(){ const b=$('#cartFab'); if(b) b.innerHTML=`Cart (${cart.reduce((n,x)=>n+x.quantity,0)}) <span>[Cart]</span>`; }
 
   const toast = (msg, bad=false) => {
     const el=$('#toast'); if(!el) return; el.textContent=msg; el.className=bad?'show bad':'show';
@@ -65,7 +63,7 @@
   function modal(html){
     const root = $('#modalRoot');
     if(!root) return;
-    root.innerHTML = `<div class="modal-backdrop" id="backdrop"><div class="modal"><button class="modal-x" id="closeModal" type="button">×</button>${html}</div></div>`;
+    root.innerHTML = `<div class="modal-backdrop" id="backdrop"><div class="modal"><button class="modal-x" id="closeModal" type="button">x</button>${html}</div></div>`;
     if (window.TATARI_I18N) window.TATARI_I18N.translate(root, currentLang);
   }
   function closeModal(){ const root = $('#modalRoot'); if(root) root.innerHTML = ''; }
@@ -73,7 +71,7 @@
   function switchRole(newRole) {
     role = newRole;
     if(newRole === 'employer' && subscriptionPlan === 'free') subscriptionPlan = 'pro';
-    toast(`Active Role Switched to: ${role === 'admin' ? '⚡ System Administrator' : role === 'employer' ? '🏢 Employer / Recruiter' : '👤 Ordinary User'}`);
+    toast(`Active Role Switched to: ${role === 'admin' ? 'System Administrator' : role === 'employer' ? 'Employer / Recruiter' : 'Ordinary User'}`);
     refreshUser();
     renderSearchResults();
   }
@@ -89,9 +87,9 @@
         ${mode==='signup' || mode==='signin' ? `
           <label>Select Active Role (Business Logic Rule)
             <select name="user_role" id="userRoleSelect">
-              <option value="normal_user" ${role==='normal_user'?'selected':''}>👤 Ordinary User (Job Seeker / Freelancer)</option>
-              <option value="employer" ${role==='employer'?'selected':''}>🏢 Employer / Recruiter (Publish Vacancies)</option>
-              <option value="admin" ${role==='admin'?'selected':''}>⚡ System Administrator (Manage & Export)</option>
+              <option value="normal_user" ${role==='normal_user'?'selected':''}>Ordinary User (Job Seeker / Freelancer)</option>
+              <option value="employer" ${role==='employer'?'selected':''}>Employer / Recruiter (Publish Vacancies)</option>
+              <option value="admin" ${role==='admin'?'selected':''}>System Administrator (Manage & Export)</option>
             </select>
           </label>
         ` : ''}
@@ -116,7 +114,7 @@
         profile = { full_name: f.get('full_name') || 'Demo Member' };
         closeModal();
         await refreshUser();
-        toast(`Signed in as ${role === 'admin' ? '⚡ System Administrator' : role === 'employer' ? '🏢 Employer' : '👤 Ordinary User'}.`);
+        toast(`Signed in as ${role === 'admin' ? 'System Administrator' : role === 'employer' ? 'Employer' : 'Ordinary User'}.`);
       };
     }
   }
@@ -126,7 +124,7 @@
     if($('#dashboardBtn')) {
       if(session) {
         $('#dashboardBtn').hidden = false;
-        const roleLabel = role==='admin' ? '⚡ Administrator' : role==='employer' ? '🏢 Employer' : '👤 Ordinary User';
+        const roleLabel = role==='admin' ? 'Administrator' : role==='employer' ? 'Employer' : 'Ordinary User';
         $('#dashboardBtn').innerHTML = `${roleLabel} Portal`;
       } else {
         $('#dashboardBtn').hidden = true;
@@ -222,7 +220,7 @@
           <article class="resource-card job-card">
             <div class="resource-art career">
               ${item.company_logo ? `<img src="${esc(item.company_logo)}" class="company-logo-img" alt="Logo"/>` : '<span>CAREER VACANCY</span>'}
-              <b>🏢</b>
+              <b>[Job]</b>
             </div>
             <div class="resource-body">
               <span class="pill">${esc(item.job_type||'Full-Time')} · ${esc(item.location||'Addis Ababa')}</span>
@@ -242,7 +240,7 @@
           <article class="resource-card freelance-card">
             <div class="resource-art job">
               ${item.client_logo ? `<img src="${esc(item.client_logo)}" class="company-logo-img" alt="Logo"/>` : '<span>FREELANCE CONTRACT</span>'}
-              <b>💼</b>
+              <b>[Project]</b>
             </div>
             <div class="resource-body">
               <span class="pill">${esc(item.category||'General')} · ${esc(item.job_type||'Fixed-Price')}</span>
@@ -259,7 +257,7 @@
       } else {
         return `
           <article class="resource-card">
-            <div class="resource-art ${item.itemType}"><span>${item.itemType==='course'?'ACADEMY':'DIGITAL STORE'}</span><b>✦</b></div>
+            <div class="resource-art ${item.itemType}"><span>${item.itemType==='course'?'ACADEMY':'DIGITAL STORE'}</span><b>+</b></div>
             <div class="resource-body">
               <span class="pill">${item.itemType==='course'?'ONLINE COURSE':'DIGITAL TOOL'}</span>
               <h3>${esc(item.displayTitle)}</h3>
@@ -291,7 +289,7 @@
     const cardsHtml = list.map(t => `
       <div class="testimonial-card">
         <div class="testimonial-header">
-          ${t.author_avatar ? `<img src="${esc(t.author_avatar)}" class="author-avatar" alt="Avatar"/>` : '<div class="avatar-placeholder">👤</div>'}
+          ${t.author_avatar ? `<img src="${esc(t.author_avatar)}" class="author-avatar" alt="Avatar"/>` : '<div class="avatar-placeholder">User</div>'}
           <div>
             <b>${esc(t.author_name)}</b>
             <small>${esc(t.company_title || 'Verified Member')}</small>
@@ -314,14 +312,14 @@
       <div class="payment-box">
         <small>PLAN PRICING</small>
         <strong>${price}</strong>
-        <p class="muted">${isCurrent ? '✅ Currently Active on your Employer Account' : 'Upgrade your employer posting limit & brand visibility.'}</p>
+        <p class="muted">${isCurrent ? 'Currently Active on your Employer Account' : 'Upgrade your employer posting limit & brand visibility.'}</p>
       </div>
       <div class="stack-form">
         <p><b>Included Package Benefits:</b></p>
         <ul>
-          <li>✓ ${planTier==='starter'?'1 Active Vacancy Listing':planTier==='pro'?'10 Active Job & Freelance Vacancies':'Unlimited Job & Contract Postings'}</li>
-          <li>✓ ${planTier==='starter'?'Standard Candidate Tracking':'Company Logo Branding Uploads & High-Priority Placement'}</li>
-          <li>✓ ${planTier==='starter'?'Community Support':'Direct Candidate CV & Application Export (CSV / Excel)'}</li>
+          <li>- ${planTier==='starter'?'1 Active Vacancy Listing':planTier==='pro'?'10 Active Job & Freelance Vacancies':'Unlimited Job & Contract Postings'}</li>
+          <li>- ${planTier==='starter'?'Standard Candidate Tracking':'Company Logo Branding Uploads & High-Priority Placement'}</li>
+          <li>- ${planTier==='starter'?'Community Support':'Direct Candidate CV & Application Export (CSV / Excel)'}</li>
         </ul>
         <button class="btn btn-primary full-btn" id="confirmSubBtn" data-action="confirm-sub" data-plan="${planTier}" type="button">${isCurrent?'Plan Already Active':'Confirm Subscription Plan'}</button>
       </div>
@@ -343,7 +341,7 @@
     }
 
     modal(`
-      <div class="section-label">${role==='admin'?'⚡ ADMIN DIRECT PUBLISHING':'🏢 EMPLOYER VACANCY PUBLISHING'}</div>
+      <div class="section-label">${role==='admin'?'ADMIN DIRECT PUBLISHING':'EMPLOYER VACANCY PUBLISHING'}</div>
       <h2>Publish Job Vacancy or Freelance Contract</h2>
       <p class="muted">Active Role: <b>${role==='admin'?'System Administrator':'Employer / Recruiter'}</b> (${subscriptionPlan.toUpperCase()} Plan)</p>
       
@@ -370,7 +368,7 @@
         </div>
         <label>Salary Range or Budget (ETB)<input name="salary_range" placeholder="e.g. 45,000 ETB/mo"></label>
         <label>Description (English)<textarea name="description_en" rows="3" placeholder="Detailed job requirements..." required></textarea></label>
-        <button class="btn btn-primary" type="submit">Publish Listing Instant ↗</button>
+        <button class="btn btn-primary" type="submit">Publish Listing Instant</button>
       </form>
     `);
 
@@ -426,7 +424,7 @@
     if(!cart.length){ toast('Your cart is empty.'); return; }
     const rows = cart.map(x => {
       const p = (x.type==='course'?courses:products).find(y => y.id === x.id);
-      return `<div class="cart-row"><div><b>${esc(p?.name||p?.title||'Resource')}</b><small>${x.type==='course'?'Course':'Digital product'}</small></div><div class="qty"><button type="button" data-action="qty-minus" data-id="${x.id}">−</button>${x.quantity}<button type="button" data-action="qty-plus" data-id="${x.id}">+</button></div><strong>${money((currency==='ETB'?p?.price_etb:p?.price_usd)*x.quantity)}</strong><button type="button" class="remove" data-action="qty-remove" data-id="${x.id}">×</button></div>`;
+      return `<div class="cart-row"><div><b>${esc(p?.name||p?.title||'Resource')}</b><small>${x.type==='course'?'Course':'Digital product'}</small></div><div class="qty"><button type="button" data-action="qty-minus" data-id="${x.id}">-</button>${x.quantity}<button type="button" data-action="qty-plus" data-id="${x.id}">+</button></div><strong>${money((currency==='ETB'?p?.price_etb:p?.price_usd)*x.quantity)}</strong><button type="button" class="remove" data-action="qty-remove" data-id="${x.id}">x</button></div>`;
     }).join('');
     
     modal(`<div class="section-label">YOUR SELECTION</div><h2>Your cart</h2><div class="cart-list">${rows}</div><div class="cart-total"><span>Currency</span><select id="cartCurrency"><option value="ETB" ${currency==='ETB'?'selected':''}>ETB</option><option value="USD" ${currency==='USD'?'selected':''}>USD</option></select><b>Total: ${money(cart.reduce((s,x)=>{const p=(x.type==='course'?courses:products).find(y=>y.id===x.id);return s+(currency==='ETB'?p?.price_etb||0:p?.price_usd||0)*x.quantity},0))}</b></div><button class="btn btn-primary full-btn" id="checkoutBtn" data-action="checkout" type="button">Continue to payment instructions</button>`);
@@ -539,7 +537,7 @@
         <label>Your Full Name<input name="author_name" placeholder="e.g. Hana Tadesse" value="${esc(profile?.full_name||'')}" required></label>
         <label>Company / Title<input name="company_title" placeholder="e.g. HR Director at Commercial Corp" required></label>
         <label>Your Review / Testimonial<textarea name="content" rows="4" placeholder="Describe your experience with TATARI..." required></textarea></label>
-        <button class="btn btn-primary" type="submit">Submit Testimonial ↗</button>
+        <button class="btn btn-primary" type="submit">Submit Testimonial</button>
       </form>
     `);
 
@@ -557,7 +555,7 @@
   }
 
   async function accountModal() {
-    const roleTitle = role === 'admin' ? '⚡ System Administrator' : role === 'employer' ? '🏢 Employer / Recruiter' : '👤 Ordinary User (Job Seeker / Freelancer)';
+    const roleTitle = role === 'admin' ? 'System Administrator' : role === 'employer' ? 'Employer / Recruiter' : 'Ordinary User (Job Seeker / Freelancer)';
     const roleBadgeClass = role === 'admin' ? 'admin' : role === 'employer' ? 'employer' : 'normal_user';
     const permissionsInfo = role === 'admin' 
       ? 'FULL ADMIN PRIVILEGES: Oversee system listings, approve candidate submissions, manage user roles, export compliance reports in CSV and Excel formats.' 
@@ -569,7 +567,7 @@
       <tr data-app-id="${a.id}">
         <td><b>${esc(a.applicant_name)}</b><br><small>${esc(a.applicant_email)}</small></td>
         <td><b>${esc(a.career_jobs?.title_en || 'Vacancy')}</b><br><small>${esc(a.career_jobs?.company_name||'Company')}</small></td>
-        <td><a href="${esc(a.resume_url)}" target="_blank" class="pill-link">📄 Resume</a></td>
+        <td><a href="${esc(a.resume_url)}" target="_blank" class="pill-link">Resume Link</a></td>
         <td><span class="status ${a.status}">${esc(a.status)}</span></td>
         ${role==='admin'||role==='employer'?`
           <td>
@@ -602,8 +600,8 @@
       
       ${role==='admin' || role==='employer' ? `
         <div class="admin-actions-bar">
-          <button class="btn btn-primary btn-small" data-action="export-csv" type="button">📥 Export Applications (CSV)</button>
-          <button class="btn btn-outline btn-small" data-action="export-excel" type="button">📊 Export Applications (Excel)</button>
+          <button class="btn btn-primary btn-small" data-action="export-csv" type="button">Export Applications (CSV)</button>
+          <button class="btn btn-outline btn-small" data-action="export-excel" type="button">Export Applications (Excel)</button>
           <button class="btn btn-outline btn-small" data-action="post-vacancy" type="button">+ Post Vacancy</button>
         </div>
       ` : ''}
@@ -688,12 +686,11 @@
     f.reset(); if(fb) fb.textContent = 'Thank you. Your inquiry has been sent to TATARI.'; toast('Inquiry sent successfully.');
   }
 
-  // GLOBAL EVENT DELEGATION - Ensures 100% of buttons and dynamic clicks work regardless of when elements are created
+  // GLOBAL EVENT DELEGATION
   document.addEventListener('click', (e) => {
     const target = e.target.closest('button, a, [data-action], [data-module], [data-plan-modal]');
     if (!target) return;
 
-    // Header & Navigation Buttons
     if (target.id === 'accountBtn') { e.preventDefault(); authModal(); return; }
     if (target.id === 'dashboardBtn') { e.preventDefault(); accountModal(); return; }
     if (target.id === 'logoutBtn') { e.preventDefault(); session = null; refreshUser(); toast('Signed out.'); return; }
@@ -705,7 +702,6 @@
     if (target.id === 'cartFab') { e.preventDefault(); cartModal(); return; }
     if (target.id === 'closeModal' || target.id === 'backdrop') { e.preventDefault(); closeModal(); return; }
 
-    // Module Selection Tabs
     if (target.dataset.module) {
       e.preventDefault();
       $$('#moduleSelectTabs button').forEach(x => x.classList.remove('active'));
@@ -715,16 +711,13 @@
       return;
     }
 
-    // Subscription Plan Modal Buttons
     if (target.dataset.planModal) { e.preventDefault(); subscriptionPlanModal(target.dataset.planModal); return; }
     if (target.dataset.action === 'confirm-sub') { e.preventDefault(); selectSubscriptionPlan(target.dataset.plan); return; }
 
-    // Search Engine Result Cards (Apply, Proposal, Add to Cart)
     if (target.dataset.careerId) { e.preventDefault(); openCareerDetails(target.dataset.careerId); return; }
     if (target.dataset.freelanceId) { e.preventDefault(); openFreelanceDetails(target.dataset.freelanceId); return; }
     if (target.dataset.add) { e.preventDefault(); addCart(target.dataset.add, target.dataset.type); return; }
 
-    // Role Switcher Actions
     if (target.dataset.action === 'switch-role') {
       e.preventDefault();
       switchRole(target.dataset.role);
@@ -733,13 +726,11 @@
       return;
     }
 
-    // Dashboard Actions
     if (target.dataset.action === 'export-csv') { e.preventDefault(); exportApplicationsCSV(applications); return; }
     if (target.dataset.action === 'export-excel') { e.preventDefault(); exportApplicationsExcel(applications); return; }
     if (target.dataset.action === 'post-vacancy') { e.preventDefault(); postVacancyModal(); return; }
     if (target.dataset.action === 'sign-out') { e.preventDefault(); session = null; closeModal(); refreshUser(); toast('Signed out.'); return; }
 
-    // Application Approve / Reject Status Buttons
     if (target.dataset.appAction) {
       e.preventDefault();
       const app = applications.find(x => x.id === target.dataset.id);
@@ -749,7 +740,6 @@
       return;
     }
 
-    // Cart Quantities
     if (target.dataset.action === 'qty-minus') {
       e.preventDefault();
       const item = cart.find(x => x.id === target.dataset.id);
@@ -772,7 +762,6 @@
     }
     if (target.dataset.action === 'checkout') { e.preventDefault(); checkout(); return; }
 
-    // Auth Modal Switch Buttons
     if (target.id === 'goSignup') { e.preventDefault(); authModal('signup'); return; }
     if (target.id === 'goReset') { e.preventDefault(); authModal('reset'); return; }
     if (target.id === 'goSignin') { e.preventDefault(); authModal('signin'); return; }
@@ -793,7 +782,7 @@
 
     const cartButton = document.createElement('button');
     cartButton.type = 'button'; cartButton.id = 'cartFab'; cartButton.className = 'cart-fab';
-    cartButton.innerHTML = 'Cart (0) <span>▣</span>';
+    cartButton.innerHTML = 'Cart (0) <span>[Cart]</span>';
     document.body.append(cartButton);
     updateCartCount();
   }
