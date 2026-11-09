@@ -4,7 +4,7 @@
 
   let session = { user: { id: 'demo-user-123', email: 'user@tatari.et' } },
       profile = { full_name: 'Demo Member' },
-      role = 'normal_user',
+      role = 'normal_user', // 'normal_user', 'employer', 'admin'
       subscriptionPlan = 'free',
       selectedModule = 'all',
       products = [], courses = [], jobListings = [], freelanceProjects = [], testimonials = [],
@@ -103,20 +103,6 @@
         ${mode==='signin'?'<button type="button" id="goSignup">Create an account</button><button type="button" id="goReset">Forgot password?</button>':updating?'':'<button type="button" id="goSignin">Back to sign in</button>'}
       </div>
     `);
-
-    const form = $('#authForm');
-    if(form) {
-      form.onsubmit = async e => {
-        e.preventDefault();
-        const f = new FormData(e.currentTarget);
-        role = f.get('user_role') || 'normal_user';
-        session = { user: { id: 'demo-user-123', email: f.get('email') || 'user@tatari.et' } };
-        profile = { full_name: f.get('full_name') || 'Demo Member' };
-        closeModal();
-        await refreshUser();
-        toast(`Signed in as ${role === 'admin' ? 'System Administrator' : role === 'employer' ? 'Employer' : 'Ordinary User'}.`);
-      };
-    }
   }
 
   async function refreshUser() {
@@ -371,42 +357,6 @@
         <button class="btn btn-primary" type="submit">Publish Listing Instant</button>
       </form>
     `);
-
-    const form = $('#postListingForm');
-    if(form) {
-      form.onsubmit = e => {
-        e.preventDefault();
-        const fd = new FormData(e.currentTarget);
-        const listingType = fd.get('listing_type');
-        const newJob = {
-          id: 'custom-' + Date.now(),
-          title_en: fd.get('title_en'),
-          title_am: fd.get('title_am'),
-          company_name: fd.get('company_name'),
-          location: fd.get('location'),
-          salary_range: fd.get('salary_range'),
-          category: fd.get('category'),
-          job_type: 'Full-Time',
-          description_en: fd.get('description_en'),
-          itemType: listingType === 'career' ? 'career' : 'freelance',
-          recruiter_id: session?.user?.id || 'employer-1'
-        };
-
-        if(listingType === 'career') {
-          jobListings.unshift(newJob);
-        } else {
-          freelanceProjects.unshift({
-            ...newJob,
-            budget_min: parseNumericSalary(newJob.salary_range) || 30000,
-            budget_max: parseNumericSalary(newJob.salary_range) || 60000
-          });
-        }
-        
-        toast('New Vacancy / Project published to Search Engine successfully!');
-        closeModal();
-        renderSearchResults();
-      };
-    }
   }
 
   function addCart(id, type) {
@@ -453,7 +403,7 @@
       <div class="job-description-box"><p>${esc(currentLang==='am'&&job.description_am ? job.description_am : (job.description_en||job.description))}</p></div>
       <hr>
       <h3>Apply for Vacancy</h3>
-      <form id="jobAppForm" class="stack-form">
+      <form id="jobAppForm" class="stack-form" data-job-id="${job.id}">
         <label>Full Name<input name="applicant_name" value="${esc(profile?.full_name||'Demo Member')}" required></label>
         <label>Email Address<input name="applicant_email" type="email" value="${esc(session?.user?.email||'user@tatari.et')}" required></label>
         <label>Resume / CV Link (Google Drive / LinkedIn)<input name="resume_url" type="url" value="https://drive.google.com/demo-cv" required></label>
@@ -461,28 +411,6 @@
         <button class="btn btn-primary" type="submit">Submit Candidate Application</button>
       </form>
     `);
-
-    const form = $('#jobAppForm');
-    if(form) {
-      form.onsubmit = e => {
-        e.preventDefault();
-        const fd = new FormData(e.currentTarget);
-        applications.unshift({
-          id: 'app-' + Date.now(),
-          job_id: job.id,
-          user_id: session?.user?.id || 'demo-user-123',
-          applicant_name: fd.get('applicant_name'),
-          applicant_email: fd.get('applicant_email'),
-          resume_url: fd.get('resume_url'),
-          notes: fd.get('notes'),
-          status: 'pending',
-          created_at: new Date().toISOString(),
-          career_jobs: { title_en: job.title_en, company_name: job.company_name }
-        });
-        toast('Application submitted successfully to employer ATS!');
-        closeModal();
-      };
-    }
   }
 
   async function openFreelanceDetails(projectId) {
@@ -499,34 +427,13 @@
       <div class="job-description-box"><p>${esc(currentLang==='am'&&project.description_am ? project.description_am : (project.description_en||project.description))}</p></div>
       <hr>
       <h3>Submit Freelance Proposal</h3>
-      <form id="proposalForm" class="stack-form">
+      <form id="proposalForm" class="stack-form" data-project-id="${project.id}">
         <label>Proposed Bid Rate (${project.currency||'ETB'})<input name="bid_amount" type="number" value="${project.budget_min||45000}" required></label>
         <label>Estimated Delivery (Days)<input name="delivery_days" type="number" value="10" required></label>
         <label>Cover Letter / Proposal Details<textarea name="cover_letter" rows="3" required>Proven expertise delivering similar projects on budget.</textarea></label>
         <button class="btn btn-primary" type="submit">Submit Proposal</button>
       </form>
     `);
-
-    const form = $('#proposalForm');
-    if(form) {
-      form.onsubmit = e => {
-        e.preventDefault();
-        const fd = new FormData(e.currentTarget);
-        proposals.unshift({
-          id: 'prop-' + Date.now(),
-          job_id: project.id,
-          freelancer_id: session?.user?.id || 'demo-user-123',
-          bid_amount: Number(fd.get('bid_amount')),
-          delivery_days: Number(fd.get('delivery_days')),
-          cover_letter: fd.get('cover_letter'),
-          status: 'submitted',
-          created_at: new Date().toISOString(),
-          jobs: { title_en: project.title_en }
-        });
-        toast('Freelance proposal submitted successfully!');
-        closeModal();
-      };
-    }
   }
 
   function addTestimonialModal() {
@@ -540,18 +447,6 @@
         <button class="btn btn-primary" type="submit">Submit Testimonial</button>
       </form>
     `);
-
-    const form = $('#testimonialForm');
-    if(form) {
-      form.onsubmit = e => {
-        e.preventDefault();
-        const fd = new FormData(e.currentTarget);
-        testimonials.unshift({
-          author_name: fd.get('author_name'), company_title: fd.get('company_title'), content: fd.get('content')
-        });
-        toast('Testimonial added to website successfully!'); closeModal(); renderTestimonialBanners();
-      };
-    }
   }
 
   async function accountModal() {
@@ -681,12 +576,122 @@
     toast('Excel spreadsheet exported successfully!');
   }
 
-  async function submitInquiry(e) {
-    e.preventDefault(); const f = e.currentTarget, fb = $('#inquiryFeedback');
-    f.reset(); if(fb) fb.textContent = 'Thank you. Your inquiry has been sent to TATARI.'; toast('Inquiry sent successfully.');
-  }
+  // GLOBAL FORM SUBMIT DELEGATION - Ensures forms inside modals or sections submit properly
+  document.addEventListener('submit', (e) => {
+    const form = e.target;
+    if (!form) return;
 
-  // GLOBAL EVENT DELEGATION
+    if (form.id === 'authForm') {
+      e.preventDefault();
+      const f = new FormData(form);
+      role = f.get('user_role') || 'normal_user';
+      session = { user: { id: 'demo-user-123', email: f.get('email') || 'user@tatari.et' } };
+      profile = { full_name: f.get('full_name') || 'Demo Member' };
+      closeModal();
+      refreshUser();
+      toast(`Signed in as ${role === 'admin' ? 'System Administrator' : role === 'employer' ? 'Employer' : 'Ordinary User'}.`);
+      return;
+    }
+
+    if (form.id === 'postListingForm') {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const listingType = fd.get('listing_type');
+      const newJob = {
+        id: 'custom-' + Date.now(),
+        title_en: fd.get('title_en'),
+        title_am: fd.get('title_am'),
+        company_name: fd.get('company_name'),
+        location: fd.get('location'),
+        salary_range: fd.get('salary_range'),
+        category: fd.get('category'),
+        job_type: 'Full-Time',
+        description_en: fd.get('description_en'),
+        itemType: listingType === 'career' ? 'career' : 'freelance',
+        recruiter_id: session?.user?.id || 'employer-1'
+      };
+
+      if (listingType === 'career') {
+        jobListings.unshift(newJob);
+      } else {
+        freelanceProjects.unshift({
+          ...newJob,
+          budget_min: parseNumericSalary(newJob.salary_range) || 30000,
+          budget_max: parseNumericSalary(newJob.salary_range) || 60000
+        });
+      }
+      toast('New Vacancy / Project published to Search Engine successfully!');
+      closeModal();
+      renderSearchResults();
+      return;
+    }
+
+    if (form.id === 'jobAppForm') {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const jobId = form.dataset.jobId;
+      const job = jobListings.find(j => String(j.id) === String(jobId));
+      applications.unshift({
+        id: 'app-' + Date.now(),
+        job_id: jobId,
+        user_id: session?.user?.id || 'demo-user-123',
+        applicant_name: fd.get('applicant_name'),
+        applicant_email: fd.get('applicant_email'),
+        resume_url: fd.get('resume_url'),
+        notes: fd.get('notes'),
+        status: 'pending',
+        created_at: new Date().toISOString(),
+        career_jobs: { title_en: job?.title_en || 'Vacancy', company_name: job?.company_name || 'Partner' }
+      });
+      toast('Application submitted successfully!');
+      closeModal();
+      return;
+    }
+
+    if (form.id === 'proposalForm') {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const projectId = form.dataset.projectId;
+      const project = freelanceProjects.find(j => String(j.id) === String(projectId));
+      proposals.unshift({
+        id: 'prop-' + Date.now(),
+        job_id: projectId,
+        freelancer_id: session?.user?.id || 'demo-user-123',
+        bid_amount: Number(fd.get('bid_amount')),
+        delivery_days: Number(fd.get('delivery_days')),
+        cover_letter: fd.get('cover_letter'),
+        status: 'submitted',
+        created_at: new Date().toISOString(),
+        jobs: { title_en: project?.title_en || 'Freelance Project' }
+      });
+      toast('Freelance proposal submitted successfully!');
+      closeModal();
+      return;
+    }
+
+    if (form.id === 'testimonialForm') {
+      e.preventDefault();
+      const fd = new FormData(form);
+      testimonials.unshift({
+        author_name: fd.get('author_name'), company_title: fd.get('company_title'), content: fd.get('content')
+      });
+      toast('Testimonial added to website successfully!');
+      closeModal();
+      renderTestimonialBanners();
+      return;
+    }
+
+    if (form.id === 'inquiryForm') {
+      e.preventDefault();
+      const fb = $('#inquiryFeedback');
+      form.reset();
+      if(fb) fb.textContent = 'Thank you. Your inquiry has been sent to TATARI.';
+      toast('Inquiry sent successfully.');
+      return;
+    }
+  });
+
+  // GLOBAL EVENT DELEGATION FOR CLICKS
   document.addEventListener('click', (e) => {
     const target = e.target.closest('button, a, [data-action], [data-module], [data-plan-modal]');
     if (!target) return;
@@ -774,8 +779,6 @@
     if($('#filterSalary')) $('#filterSalary').oninput = renderSearchResults;
     if($('#filterCategory')) $('#filterCategory').onchange = renderSearchResults;
     if($('#filterWorkType')) $('#filterWorkType').onchange = renderSearchResults;
-
-    if($('#inquiryForm')) $('#inquiryForm').onsubmit = submitInquiry;
 
     await loadData();
     await refreshUser();
