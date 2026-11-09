@@ -60,7 +60,7 @@
 
   function authModal(mode='signin'){
     const updating = mode === 'updatepassword';
-    modal(`<div class="section-label">TATARI ACCOUNT</div><h2>${mode==='signup'?'Create your account':mode==='reset'?'Reset password':updating?'Choose a new password':'Welcome back'}</h2><p class="muted">${mode==='signup'?'Register as a Normal User or Employer to apply for jobs, post vacancies, or hire freelancers.':mode==='reset'?'Enter your account email to receive a reset link.':updating?'Choose a new password for your TATARI account.':'Sign in to access your portal, applications, and subscriptions.'}</p><form id="authForm" class="stack-form">${mode==='signup'?'<label>Full name<input name="full_name" required minlength="2"></label><label>Account Type<select name="user_role"><option value="normal_user">Normal User (Job Seeker / Freelancer)</option><option value="employer">Employer / Recruiter</option></select></label>':''}${mode==='reset'||mode==='signin'||mode==='signup'?'<label>Email<input name="email" type="email" required id="authEmail"></label>':''}${mode!=='reset'?`<label>${updating?'New password':'Password'}<input name="password" type="password" required minlength="8" autocomplete="new-password"></label>`:''}${updating?'<label>Confirm new password<input name="confirm_password" type="password" required minlength="8"></label>':''}<button class="btn btn-primary" type="submit">${mode==='signup'?'Create account':mode==='reset'?'Send reset link':updating?'Update password':'Sign in'}</button><p id="authFeedback" class="form-feedback"></p></form><div class="auth-switch">${mode==='signin'?'<button type="button" id="goSignup">Create an account</button><button type="button" id="goReset">Forgot password?</button>':updating?'':'<button type="button" id="goSignin">Back to sign in</button>'}</div>`);
+    modal(`<div class="section-label">TATARI ACCOUNT</div><h2>${mode==='signup'?'Create your account':mode==='reset'?'Reset password':updating?'Choose a new password':'Welcome back'}</h2><p class="muted">${mode==='signup'?'Register as a Normal User or Employer to apply for jobs, post vacancies, or hire freelancers.':mode==='reset'?'Enter your account email to receive a reset link.':updating?'Choose a new password for your TATARI account.':'Sign in to access your portal, applications, and subscriptions.'}</p><form id="authForm" class="stack-form">${mode==='signup'?'<label>Full name<input name="full_name" required minlength="2"></label><label>Account Type / Role<select name="user_role" id="userRoleSelect"><option value="normal_user">👤 Ordinary User (Job Seeker / Freelancer)</option><option value="employer">🏢 Employer / Recruiter</option><option value="admin">⚡ System Administrator</option></select></label>':''}${mode==='reset'||mode==='signin'||mode==='signup'?'<label>Email<input name="email" type="email" required id="authEmail"></label>':''}${mode!=='reset'?`<label>${updating?'New password':'Password'}<input name="password" type="password" required minlength="8" autocomplete="new-password"></label>`:''}${updating?'<label>Confirm new password<input name="confirm_password" type="password" required minlength="8"></label>':''}<button class="btn btn-primary" type="submit">${mode==='signup'?'Create account':mode==='reset'?'Send reset link':updating?'Update password':'Sign in'}</button><p id="authFeedback" class="form-feedback"></p></form><div class="auth-switch">${mode==='signin'?'<button type="button" id="goSignup">Create an account</button><button type="button" id="goReset">Forgot password?</button>':updating?'':'<button type="button" id="goSignin">Back to sign in</button>'}</div>`);
     
     const form = $('#authForm');
     if(form) {
@@ -136,7 +136,8 @@
       if($('#accountBtn')) $('#accountBtn').hidden = true; 
       if($('#dashboardBtn')) {
         $('#dashboardBtn').hidden = false;
-        $('#dashboardBtn').textContent = role==='admin' ? 'Admin Portal' : role==='employer' ? 'Employer Portal' : 'My Account';
+        const roleLabel = role==='admin' ? '⚡ Administrator' : role==='employer' ? '🏢 Employer' : '👤 Ordinary User';
+        $('#dashboardBtn').innerHTML = `${roleLabel} Portal`;
       }
       if($('#logoutBtn')) $('#logoutBtn').hidden = false;
     } catch(e) {
@@ -312,7 +313,13 @@
   function renderTestimonialBanners() {
     const banner = $('#testimonialBannerList');
     if(!banner) return;
-    banner.innerHTML = testimonials.length ? testimonials.map(t => `
+    if(!testimonials.length) {
+      banner.innerHTML = '<div class="empty">No testimonials added yet. Click "+ Add Testimonial" to submit one!</div>';
+      return;
+    }
+    // Duplicate list to achieve continuous infinite marquee effect
+    const list = [...testimonials, ...testimonials];
+    const cardsHtml = list.map(t => `
       <div class="testimonial-card">
         <div class="testimonial-header">
           ${t.author_avatar ? `<img src="${esc(t.author_avatar)}" class="author-avatar" alt="Avatar"/>` : '<div class="avatar-placeholder">👤</div>'}
@@ -322,7 +329,9 @@
           </div>
         </div>
         <p>"${esc(t.content)}"</p>
-      </div>`).join('') : '<div class="empty">No testimonials added yet. Click "+ Add Testimonial" to submit one!</div>';
+      </div>`).join('');
+
+    banner.innerHTML = `<div class="testimonial-marquee-wrapper"><div class="testimonial-marquee-track">${cardsHtml}</div></div>`;
   }
 
   function subscriptionPlanModal(planTier) {
@@ -536,19 +545,65 @@
   }
 
   async function accountModal() {
+    const roleTitle = role === 'admin' ? '⚡ Administrator' : role === 'employer' ? '🏢 Employer / Recruiter' : '👤 Ordinary User (Job Seeker)';
+    const roleBadgeClass = role === 'admin' ? 'admin' : role === 'employer' ? 'employer' : 'normal_user';
+    const permissionsInfo = role === 'admin' 
+      ? 'Full Privileges: Moderate listings, manage candidate applications, export system CSV/Excel records, oversee platform subscriptions.' 
+      : role === 'employer'
+      ? 'Employer Privileges: Publish corporate vacancies, post freelance contracts, view candidate applications, purchase subscription tiers.'
+      : 'Ordinary User Privileges: Search jobs & freelance opportunities, submit job applications, place freelance bids, purchase digital resources & courses.';
+
     modal(`
-      <div class="section-label">USER PORTAL</div>
-      <h2>Hello, ${esc(profile?.full_name || session?.user?.email || 'User')}</h2>
-      <p class="muted">Active Subscription: <span class="status approved">${subscriptionPlan.toUpperCase()}</span></p>
+      <div class="section-label">ACCOUNT DASHBOARD & ROLE CONTROL</div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h2>Hello, ${esc(profile?.full_name || session?.user?.email || 'User')}</h2>
+        <span class="role-badge ${roleBadgeClass}">${roleTitle}</span>
+      </div>
+      
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:14px; border-radius:10px; font-size:12px; margin-bottom:18px;">
+        <strong style="display:block; margin-bottom:4px; color:#1e293b;">Role Capabilities & Access Level:</strong>
+        <p style="margin:0; color:#475569;">${permissionsInfo}</p>
+        <div style="margin-top:10px; display:flex; gap:8px;">
+          <small>Switch active role demo:</small>
+          <button class="btn btn-small btn-outline" id="switchUserRole" type="button">Switch to ${role==='admin'?'Ordinary User':role==='employer'?'Administrator':'Employer'}</button>
+        </div>
+      </div>
+
+      <p class="muted">Active Subscription Plan: <span class="status approved">${subscriptionPlan.toUpperCase()}</span></p>
+      
+      ${role==='admin' ? `
+        <div class="admin-actions-bar">
+          <button class="btn btn-primary btn-small" onclick="window.TATARI_ADMIN_EXPORT_CSV()" type="button">📥 Export All Applications (CSV)</button>
+          <button class="btn btn-outline btn-small" onclick="window.TATARI_ADMIN_EXPORT_EXCEL()" type="button">📊 Export All Applications (Excel)</button>
+        </div>
+      ` : ''}
+
       <div class="portal-tabs">
-        <button class="active" data-tab="apps" type="button">Job Applications (1)</button>
-        <button data-tab="props" type="button">Freelance Proposals (1)</button>
+        <button class="active" data-tab="apps" type="button">My Applications (1)</button>
+        <button data-tab="props" type="button">My Proposals (1)</button>
       </div>
       <div id="portalContent"><div class="order-card"><div><b>Senior HR Lead</b><small>Company: Hibret Bank S.C.</small></div><span class="status approved">approved</span></div></div>
       <div class="portal-foot"><span>${esc(session?.user?.email || 'user@tatari.et')}</span><button id="signOut" class="btn btn-outline btn-small" type="button">Logout</button></div>
     `);
+
+    if($('#switchUserRole')) {
+      $('#switchUserRole').onclick = () => {
+        role = role === 'admin' ? 'normal_user' : role === 'employer' ? 'admin' : 'employer';
+        toast(`Switched role view to: ${role.toUpperCase()}`);
+        refreshUser();
+        closeModal();
+        accountModal();
+      };
+    }
     if($('#signOut')) $('#signOut').onclick = async () => { session = null; closeModal(); refreshUser(); toast('Signed out.'); };
   }
+  
+  window.TATARI_ADMIN_EXPORT_CSV = () => exportApplicationsCSV([
+    { id: 'app1', applicant_name: 'Abebe Bikila', applicant_email: 'abebe@example.com', career_jobs: { title_en: 'Senior HR Lead', company_name: 'Hibret Bank S.C.' }, resume_url: 'https://drive.google.com', status: 'approved', notes: 'Top candidate' }
+  ]);
+  window.TATARI_ADMIN_EXPORT_EXCEL = () => exportApplicationsExcel([
+    { id: 'app1', applicant_name: 'Abebe Bikila', applicant_email: 'abebe@example.com', career_jobs: { title_en: 'Senior HR Lead', company_name: 'Hibret Bank S.C.' }, resume_url: 'https://drive.google.com', status: 'approved', notes: 'Top candidate' }
+  ]);
 
   async function submitInquiry(e) {
     e.preventDefault(); const f = e.currentTarget, fb = $('#inquiryFeedback');
