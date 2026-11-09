@@ -4,8 +4,8 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <meta content="#10243b" name="theme-color"/>
-<meta content="TATARI Consulting — Global Jobs, Freelance Marketplace, Testimonials & Business Talent Solutions." name="description"/>
-<title>TATARI — Job Portal, Freelance Marketplace & Talent Solutions</title>
+<meta content="TATARI Consulting — Complete Job Search Engine, Freelance Hub, Subscriptions & Admin Management." name="description"/>
+<title>TATARI — Global Job Search Engine & Freelance Hub</title>
 <link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <link href="style.css" rel="stylesheet"/>
@@ -16,11 +16,9 @@
   <a class="brand" href="#home"><span class="brand-icon">T</span><span><b>TATARI</b><small>CONSULTING</small></span></a>
   <button aria-label="Open menu" class="mobile-menu" id="mobileMenu">☰</button>
   <nav id="nav">
-    <a href="#about">About</a>
+    <a href="#home">Home</a>
+    <a href="#search-engine">Job Search Engine</a>
     <a href="#testimonials-section">Testimonials</a>
-    <a href="#store">Digital Store</a>
-    <a href="#jobs-board">Job Board</a>
-    <a href="#freelance-hub">Freelance Hub</a>
     <a href="#plans-pricing">Subscription Plans</a>
     <a href="#contact">Contact</a>
   </nav>
@@ -39,20 +37,135 @@
   <!-- Hero Section -->
   <section class="hero" id="home">
     <div class="hero-copy">
-      <span class="eyebrow">PRACTICAL CONSULTING · CAREER JOBS · FREELANCE CONTRACTS</span>
+      <span class="eyebrow">STANDARDIZED JOB SEARCH ENGINE · FREELANCE HUB · SUBSCRIPTIONS</span>
       <h1>People. Data. Technology.<br/><em>Growth.</em></h1>
-      <p>Ethiopia's premier platform for corporate career jobs, freelance talent, company logo branding, and professional analytics.</p>
+      <p>Search corporate career jobs, freelance project contracts, and digital tools with granular location, salary, and title filters.</p>
       <div class="hero-ctas">
-        <a class="btn btn-primary" href="#jobs-board">Explore Job Board ↗</a>
-        <a class="btn btn-ghost" href="#freelance-hub">Browse Freelance Projects</a>
+        <a class="btn btn-primary" href="#search-engine">Explore Search Engine ↗</a>
+        <a class="btn btn-ghost" href="#plans-pricing">Employer Plans</a>
       </div>
-      <div class="hero-proof"><span>✦</span> Addis Ababa, Ethiopia · Trusted by leading companies and verified talent.</div>
+      <div class="hero-proof"><span>✦</span> Addis Ababa, Ethiopia · Integrated role management for Admins, Employers & Job Seekers.</div>
     </div>
     <div class="hero-visual">
       <div class="visual-ring ring1"></div>
       <div class="visual-ring ring2"></div>
       <div class="visual-center">T</div>
-      <span class="orbit-tag tag1">CAREERS</span><span class="orbit-tag tag2">LOGOS</span><span class="orbit-tag tag3">FREELANCE</span><span class="orbit-tag tag4">SUBSCRIPTIONS</span>
+      <span class="orbit-tag tag1">CAREERS</span><span class="orbit-tag tag2">LOGOS</span><span class="orbit-tag tag3">EXPORT CSV</span><span class="orbit-tag tag4">SUBSCRIPTIONS</span>
+    </div>
+  </section>
+
+  <!-- Standard Job Search Engine Module (Selectable & Filterable) -->
+  <section class="section search-engine-section" id="search-engine">
+    <div class="section-head">
+      <div>
+        <div class="section-label">SELECTABLE DISCOVERY ENGINE</div>
+        <h2>Global Job & Freelance <em>Search Engine</em></h2>
+      </div>
+      <div class="head-btn-group">
+        <button class="btn btn-primary btn-small" id="postListingBtn">+ Post New Vacancy / Project</button>
+      </div>
+    </div>
+
+    <!-- Selectable Module Filter Tabs -->
+    <div class="module-select-tabs" id="moduleSelectTabs">
+      <button class="tab-btn active" data-module="all">🔍 All Opportunities</button>
+      <button class="tab-btn" data-module="career">🏢 Full-Time & Career Jobs</button>
+      <button class="tab-btn" data-module="freelance">💼 Freelance Projects</button>
+      <button class="tab-btn" data-module="store">✦ Digital Store & Courses</button>
+    </div>
+
+    <!-- Granular Filters: Job Title, Location, Salary, Category, Work Type -->
+    <div class="search-filter-box">
+      <div class="filter-grid">
+        <div class="field">
+          <label>Job Title / Keyword</label>
+          <input id="filterKeyword" placeholder="e.g. HR Manager, Python Developer, Accountant..."/>
+        </div>
+        <div class="field">
+          <label>Location</label>
+          <input id="filterLocation" placeholder="e.g. Addis Ababa, Remote, Hawassa..."/>
+        </div>
+        <div class="field">
+          <label>Minimum Salary / Budget (ETB)</label>
+          <input id="filterSalary" min="0" placeholder="e.g. 20000" type="number"/>
+        </div>
+        <div class="field">
+          <label>Category / Sector</label>
+          <select id="filterCategory">
+            <option value="all">All Sectors</option>
+            <option value="HR & Analytics">HR & Analytics</option>
+            <option value="Software & Tech">Software & Tech</option>
+            <option value="Finance & Management">Finance & Management</option>
+            <option value="Design & Creative">Design & Creative</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Work Type</label>
+          <select id="filterWorkType">
+            <option value="all">All Work Types</option>
+            <option value="Full-Time">Full-Time</option>
+            <option value="Remote">Remote</option>
+            <option value="Hybrid">Hybrid</option>
+            <option value="Contract">Contract / Project</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtered Results Grid -->
+    <div class="catalog-grid" id="searchResultsGrid">
+      <div class="empty-note">Loading opportunities...</div>
+    </div>
+  </section>
+
+  <!-- Employer Subscription Plans Section -->
+  <section class="section pricing-section" id="plans-pricing">
+    <div class="section-head">
+      <div>
+        <div class="section-label">SUBSCRIPTION TIERS</div>
+        <h2>Employer <em>Posting Packages</em></h2>
+      </div>
+      <p>Choose an employer package to publish vacancies with company logo branding and top search placement.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <span class="pill">FREE STARTER</span>
+        <h3>Starter Employer</h3>
+        <p>Basic tier for single job vacancies.</p>
+        <div class="price">ETB 0 <span>/ month</span></div>
+        <ul>
+          <li>✓ 1 Active Vacancy Listing</li>
+          <li>✓ Basic Candidate Tracker</li>
+          <li>✕ Logo Upload Branding</li>
+        </ul>
+        <button class="btn btn-outline full-btn" data-plan-modal="starter">View Details & Subscribe</button>
+      </div>
+      <div class="pricing-card featured">
+        <span class="pill">MOST POPULAR</span>
+        <h3>Pro Employer</h3>
+        <p>For growing organizations and recruitment agencies.</p>
+        <div class="price">ETB 4,500 <span>/ month</span></div>
+        <ul>
+          <li>✓ 10 Active Job & Freelance Vacancies</li>
+          <li>✓ Company Logo Branding Uploads</li>
+          <li>✓ High-Priority Search Placement</li>
+          <li>✓ Candidate CV Export Tools</li>
+        </ul>
+        <button class="btn btn-primary full-btn" data-plan-modal="pro">View Details & Subscribe</button>
+      </div>
+      <div class="pricing-card">
+        <span class="pill">ENTERPRISE</span>
+        <h3>Corporate Unlimited</h3>
+        <p>Unlimited recruitment for large enterprises.</p>
+        <div class="price">ETB 12,000 <span>/ month</span></div>
+        <ul>
+          <li>✓ Unlimited Vacancies & Freelance Contracts</li>
+          <li>✓ Company Logo & Testimonial Banners</li>
+          <li>✓ Dedicated Account Management</li>
+          <li>✓ Admin Priority Direct Approval</li>
+        </ul>
+        <button class="btn btn-outline full-btn" data-plan-modal="enterprise">View Details & Subscribe</button>
+      </div>
     </div>
   </section>
 
@@ -61,7 +174,7 @@
     <div class="section-head">
       <div>
         <div class="section-label">SUCCESS STORIES</div>
-        <h2>Trusted by <em>Employers & Freelancers</em></h2>
+        <h2>Client & Partner <em>Testimonials</em></h2>
       </div>
       <button class="btn btn-outline btn-small" id="addTestimonialBtn">+ Add Testimonial</button>
     </div>
@@ -70,132 +183,12 @@
     </div>
   </section>
 
-  <!-- Combined Unified Search Bar (Select & Search Jobs / Freelance / Store) -->
-  <section class="section unified-search-container">
-    <div class="unified-search-card">
-      <h3>Unified Search & Discovery</h3>
-      <p class="muted">Search across full-time jobs, freelance projects, digital tools, or filter by work type & skill stack.</p>
-      <div class="search-flex-row">
-        <select id="globalTypeSelect">
-          <option value="all">All Modules (Jobs, Freelance & Store)</option>
-          <option value="career">Career Jobs Only</option>
-          <option value="freelance">Freelance Projects Only</option>
-          <option value="store">Digital Store & Courses</option>
-        </select>
-        <div class="searchbox">⌕ <input id="globalSearchInput" placeholder="Enter job title, company name, skill, or keyword..."/></div>
-        <select id="globalCategoryFilter">
-          <option value="all">All Categories</option>
-          <option value="HR Analytics">HR & Analytics</option>
-          <option value="Software & Tech">Software & Tech</option>
-          <option value="Finance & Management">Finance & Management</option>
-          <option value="Design & Creative">Design & Creative</option>
-        </select>
-      </div>
-    </div>
-  </section>
-
-  <!-- Module 1: Full-Time Job Board -->
-  <section class="section job-board-section" id="jobs-board">
-    <div class="section-head">
-      <div>
-        <div class="section-label">01 / CAREER POSITIONS</div>
-        <h2>Corporate & Remote <em>Job Board</em></h2>
-      </div>
-      <div class="head-btn-group">
-        <button class="btn btn-primary btn-small" id="postFullTimeJobBtn">+ Post Vacancy</button>
-      </div>
-    </div>
-    <div class="catalog-grid" id="jobPortalList">
-      <div class="empty-note">Loading career job vacancies...</div>
-    </div>
-  </section>
-
-  <!-- Module 2: Upwork-Style Freelance Project Hub -->
-  <section class="section freelance-section" id="freelance-hub">
-    <div class="section-head">
-      <div>
-        <div class="section-label">02 / FREELANCE MARKETPLACE</div>
-        <h2>Freelance <em>Project Contracts</em></h2>
-      </div>
-      <div class="head-btn-group">
-        <button class="btn btn-primary btn-small" id="postFreelanceProjectBtn">+ Post Freelance Contract</button>
-      </div>
-    </div>
-    <div class="catalog-grid" id="freelanceProjectList">
-      <div class="empty-note">Loading freelance contracts...</div>
-    </div>
-  </section>
-
-  <!-- Subscription Pricing Plans -->
-  <section class="section pricing-section" id="plans-pricing">
-    <div class="section-head">
-      <div>
-        <div class="section-label">03 / EMPLOYER PLANS</div>
-        <h2>Subscription <em>Posting Plans</em></h2>
-      </div>
-      <p>Select a subscription tier to start posting corporate vacancies with company logo branding.</p>
-    </div>
-    <div class="pricing-grid">
-      <div class="pricing-card">
-        <span class="pill">FREE STARTER</span>
-        <h3>Starter Recruiter</h3>
-        <p>For small businesses posting occasional vacancies.</p>
-        <div class="price">ETB 0 <span>/ month</span></div>
-        <ul>
-          <li>✓ 1 Active Job Vacancy Posting</li>
-          <li>✓ Basic Applicant Tracking</li>
-          <li>✕ Company Logo Branding</li>
-        </ul>
-        <button class="btn btn-outline full-btn" data-plan="starter">Select Plan</button>
-      </div>
-      <div class="pricing-card featured">
-        <span class="pill">MOST POPULAR</span>
-        <h3>Pro Employer</h3>
-        <p>For growing enterprises seeking featured talent visibility.</p>
-        <div class="price">ETB 4,500 <span>/ month</span></div>
-        <ul>
-          <li>✓ 10 Active Job & Freelance Vacancies</li>
-          <li>✓ Company Logo Branding Uploads</li>
-          <li>✓ Top-Ranked Search Visibility</li>
-          <li>✓ Featured Employer Badge</li>
-        </ul>
-        <button class="btn btn-primary full-btn" data-plan="pro">Subscribe Pro</button>
-      </div>
-      <div class="pricing-card">
-        <span class="pill">ENTERPRISE</span>
-        <h3>Corporate Unlimited</h3>
-        <p>Unlimited posting for large firms & recruiters.</p>
-        <div class="price">ETB 12,000 <span>/ month</span></div>
-        <ul>
-          <li>✓ Unlimited Job & Project Vacancies</li>
-          <li>✓ Company Logo & Testimonial Banners</li>
-          <li>✓ Dedicated Account Manager</li>
-          <li>✓ Direct Candidate Access</li>
-        </ul>
-        <button class="btn btn-outline full-btn" data-plan="enterprise">Subscribe Corporate</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- Module 3: Digital Store & Academy -->
-  <section class="section store" id="store">
-    <div class="section-head">
-      <div>
-        <div class="section-label">04 / DIGITAL RESOURCES</div>
-        <h2>TATARI <em>Digital Store & Learning</em></h2>
-      </div>
-    </div>
-    <div class="catalog-grid" id="storeCatalog">
-      <div class="empty-note">Loading store resources...</div>
-    </div>
-  </section>
-
-  <!-- Contact Form -->
+  <!-- Contact Section -->
   <section class="section contact" id="contact">
     <div>
       <div class="section-label">LET'S WORK TOGETHER</div>
       <h2>What can we help<br/><em>you achieve?</em></h2>
-      <p>Contact our team for customized employer packages or enterprise recruitment solutions.</p>
+      <p>Contact our strategic consulting and talent acquisition team in Addis Ababa.</p>
     </div>
     <form class="form-card" id="inquiryForm">
       <h3>Send an inquiry</h3>
@@ -206,7 +199,7 @@
         <label>I'm interested in
           <select name="service">
             <option>Employer Subscriptions</option>
-            <option>Corporate Recruitment</option>
+            <option>Talent Recruitment</option>
             <option>Freelance Contracting</option>
             <option>Consulting & Analytics</option>
           </select>
@@ -222,7 +215,7 @@
 <footer>
   <div class="footer-main">
     <a class="brand" href="#home"><span class="brand-icon">T</span><span><b>TATARI</b><small>CONSULTING</small></span></a>
-    <p>CAREERS · LOGOS · SUBSCRIPTIONS · FREELANCE</p>
+    <p>CAREERS · SEARCH ENGINE · FREELANCE · EXPORT DATA</p>
   </div>
   <small class="copyright">© <span id="year"></span> TATARI Consulting. All rights reserved.</small>
 </footer>
