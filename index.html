@@ -4,8 +4,8 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <meta content="#10243b" name="theme-color"/>
-<meta content="TATARI Consulting — People, Data, Technology, Global Job Board & Freelance Talent Hub in Ethiopia." name="description"/>
-<title>TATARI — Consulting, Global Jobs & Freelance Hub</title>
+<meta content="TATARI Consulting — Global Jobs, Freelance Marketplace, Testimonials & Business Talent Solutions." name="description"/>
+<title>TATARI — Job Portal, Freelance Marketplace & Talent Solutions</title>
 <link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <link href="style.css" rel="stylesheet"/>
@@ -17,12 +17,11 @@
   <button aria-label="Open menu" class="mobile-menu" id="mobileMenu">☰</button>
   <nav id="nav">
     <a href="#about">About</a>
-    <a href="#services">Services</a>
-    <a href="#solutions">Solutions</a>
-    <a href="#academy">Academy</a>
+    <a href="#testimonials-section">Testimonials</a>
     <a href="#store">Digital Store</a>
     <a href="#jobs-board">Job Board</a>
     <a href="#freelance-hub">Freelance Hub</a>
+    <a href="#plans-pricing">Subscription Plans</a>
     <a href="#contact">Contact</a>
   </nav>
   <div class="head-actions">
@@ -40,130 +39,163 @@
   <!-- Hero Section -->
   <section class="hero" id="home">
     <div class="hero-copy">
-      <span class="eyebrow">PRACTICAL CONSULTING · JOBS · FREELANCE · ANALYTICS</span>
+      <span class="eyebrow">PRACTICAL CONSULTING · CAREER JOBS · FREELANCE CONTRACTS</span>
       <h1>People. Data. Technology.<br/><em>Growth.</em></h1>
-      <p>Ethiopia's premier hub for professional consulting, global job opportunities, freelance talent marketplace, and digital resources.</p>
+      <p>Ethiopia's premier platform for corporate career jobs, freelance talent, company logo branding, and professional analytics.</p>
       <div class="hero-ctas">
         <a class="btn btn-primary" href="#jobs-board">Explore Job Board ↗</a>
-        <a class="btn btn-ghost" href="#freelance-hub">Freelance Talent Hub</a>
+        <a class="btn btn-ghost" href="#freelance-hub">Browse Freelance Projects</a>
       </div>
-      <div class="hero-proof"><span>✦</span> Addis Ababa, Ethiopia · Connecting talent and top organizations worldwide.</div>
+      <div class="hero-proof"><span>✦</span> Addis Ababa, Ethiopia · Trusted by leading companies and verified talent.</div>
     </div>
     <div class="hero-visual">
       <div class="visual-ring ring1"></div>
       <div class="visual-ring ring2"></div>
       <div class="visual-center">T</div>
-      <span class="orbit-tag tag1">CAREERS</span><span class="orbit-tag tag2">TALENT</span><span class="orbit-tag tag3">FREELANCE</span><span class="orbit-tag tag4">GROWTH</span>
+      <span class="orbit-tag tag1">CAREERS</span><span class="orbit-tag tag2">LOGOS</span><span class="orbit-tag tag3">FREELANCE</span><span class="orbit-tag tag4">SUBSCRIPTIONS</span>
     </div>
   </section>
 
-  <section class="trust-strip"><span>CAREERS</span><i>•</i><span>FREELANCE</span><i>•</i><span>ANALYTICS</span><i>•</i><span>GROWTH</span></section>
-
-  <!-- About Section -->
-  <section class="section about" id="about">
-    <div class="section-label">ABOUT TATARI</div>
-    <div class="two-col">
-      <h2>Practical expertise.<br/><em>Measurable progress.</em></h2>
-      <div>
-        <p>TATARI Consulting empowers business growth across Ethiopia and East Africa by offering integrated management consulting, career opportunities, a elite freelance marketplace, and practical analytics training.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Capability & Solutions Sections -->
-  <section class="section dark-section" id="services">
+  <!-- Testimonial Banner Section -->
+  <section class="section testimonials-strip" id="testimonials-section">
     <div class="section-head">
       <div>
-        <div class="section-label light">01 / WHAT WE DO</div>
-        <h2>Five connected <em>capabilities.</em></h2>
+        <div class="section-label">SUCCESS STORIES</div>
+        <h2>Trusted by <em>Employers & Freelancers</em></h2>
       </div>
+      <button class="btn btn-outline btn-small" id="addTestimonialBtn">+ Add Testimonial</button>
     </div>
-    <div class="service-grid">
-      <article class="service-card"><span>01</span><h3>TATARI People</h3><p>HR policies, job descriptions, performance management systems, and talent recruitment procedures.</p></article>
-      <article class="service-card"><span>02</span><h3>TATARI Careers</h3><p>Connecting verified professionals with full-time, hybrid, and remote career opportunities locally and internationally.</p></article>
-      <article class="service-card"><span>03</span><h3>TATARI Freelance</h3><p>An Upwork-style project marketplace connecting top Ethiopian freelancers with corporate project contracts.</p></article>
-      <article class="service-card"><span>04</span><h3>TATARI Analytics</h3><p>Automated dashboards turning spreadsheets into actionable headcount, turnover, and KPI reporting.</p></article>
-      <article class="service-card"><span>05</span><h3>TATARI Academy</h3><p>Practical hands-on workshops in Excel, Power Query, HR analytics, and management reporting.</p></article>
+    <div class="testimonial-banner-grid" id="testimonialBannerList">
+      <div class="empty-note">Loading client & partner testimonials...</div>
     </div>
   </section>
 
-  <!-- Module 1: Dedicated Digital Store & Academy -->
-  <section class="section store" id="store">
-    <div class="section-head">
-      <div>
-        <div class="section-label">06 / DIGITAL STORE & ACADEMY</div>
-        <h2>TATARI <em>Digital Store & Learning</em></h2>
+  <!-- Combined Unified Search Bar (Select & Search Jobs / Freelance / Store) -->
+  <section class="section unified-search-container">
+    <div class="unified-search-card">
+      <h3>Unified Search & Discovery</h3>
+      <p class="muted">Search across full-time jobs, freelance projects, digital tools, or filter by work type & skill stack.</p>
+      <div class="search-flex-row">
+        <select id="globalTypeSelect">
+          <option value="all">All Modules (Jobs, Freelance & Store)</option>
+          <option value="career">Career Jobs Only</option>
+          <option value="freelance">Freelance Projects Only</option>
+          <option value="store">Digital Store & Courses</option>
+        </select>
+        <div class="searchbox">⌕ <input id="globalSearchInput" placeholder="Enter job title, company name, skill, or keyword..."/></div>
+        <select id="globalCategoryFilter">
+          <option value="all">All Categories</option>
+          <option value="HR Analytics">HR & Analytics</option>
+          <option value="Software & Tech">Software & Tech</option>
+          <option value="Finance & Management">Finance & Management</option>
+          <option value="Design & Creative">Design & Creative</option>
+        </select>
       </div>
-      <p>Acquire premium management templates, digital analytics tools, and professional online courses.</p>
-    </div>
-    <div class="store-tools">
-      <div class="searchbox">⌕ <input id="storeSearch" placeholder="Search digital products and courses..."/></div>
-      <select id="storeType">
-        <option value="all">All Products & Courses</option>
-        <option value="products">Digital Products</option>
-        <option value="courses">Online Courses</option>
-      </select>
-    </div>
-    <div class="catalog-grid" id="storeCatalog">
-      <div class="empty-note">Loading digital resources...</div>
     </div>
   </section>
 
-  <!-- Module 2: Dedicated Full-Time & Remote Job Board -->
+  <!-- Module 1: Full-Time Job Board -->
   <section class="section job-board-section" id="jobs-board">
     <div class="section-head">
       <div>
-        <div class="section-label">07 / GLOBAL CAREERS & JOB BOARD</div>
-        <h2>Full-Time & Remote <em>Job Portal</em></h2>
+        <div class="section-label">01 / CAREER POSITIONS</div>
+        <h2>Corporate & Remote <em>Job Board</em></h2>
       </div>
-      <p>Discover top career openings from leading companies across Ethiopia and worldwide.</p>
-    </div>
-    <div class="store-tools">
-      <div class="searchbox">⌕ <input id="jobSearch" placeholder="Search job title, company, or skills..."/></div>
-      <select id="jobCategoryFilter">
-        <option value="all">All Categories</option>
-        <option value="Full-Time">Full-Time</option>
-        <option value="Remote">Remote</option>
-        <option value="Hybrid">Hybrid</option>
-        <option value="Contract">Contract</option>
-      </select>
-      <button class="btn btn-primary btn-small" id="postFullTimeJobBtn">+ Post a Career Job</button>
+      <div class="head-btn-group">
+        <button class="btn btn-primary btn-small" id="postFullTimeJobBtn">+ Post Vacancy</button>
+      </div>
     </div>
     <div class="catalog-grid" id="jobPortalList">
-      <div class="empty-note">Loading active job portal listings...</div>
+      <div class="empty-note">Loading career job vacancies...</div>
     </div>
   </section>
 
-  <!-- Module 3: Dedicated Upwork-Style Freelance Hub -->
+  <!-- Module 2: Upwork-Style Freelance Project Hub -->
   <section class="section freelance-section" id="freelance-hub">
     <div class="section-head">
       <div>
-        <div class="section-label">08 / UPWORK-STYLE FREELANCE TALENT HUB</div>
-        <h2>Freelance <em>Project Marketplace</em></h2>
+        <div class="section-label">02 / FREELANCE MARKETPLACE</div>
+        <h2>Freelance <em>Project Contracts</em></h2>
       </div>
-      <p>Hire specialized experts or bid on high-paying project contracts with transparent milestones.</p>
-    </div>
-    <div class="store-tools">
-      <div class="searchbox">⌕ <input id="freelanceSearch" placeholder="Search freelance projects, tech stack, or scope..."/></div>
-      <select id="freelanceTypeFilter">
-        <option value="all">All Project Types</option>
-        <option value="Fixed-Price">Fixed-Price</option>
-        <option value="Hourly">Hourly Rate</option>
-      </select>
-      <button class="btn btn-primary btn-small" id="postFreelanceProjectBtn">+ Post a Freelance Project</button>
+      <div class="head-btn-group">
+        <button class="btn btn-primary btn-small" id="postFreelanceProjectBtn">+ Post Freelance Contract</button>
+      </div>
     </div>
     <div class="catalog-grid" id="freelanceProjectList">
-      <div class="empty-note">Loading open freelance project contracts...</div>
+      <div class="empty-note">Loading freelance contracts...</div>
     </div>
   </section>
 
-  <!-- Contact Section -->
+  <!-- Subscription Pricing Plans -->
+  <section class="section pricing-section" id="plans-pricing">
+    <div class="section-head">
+      <div>
+        <div class="section-label">03 / EMPLOYER PLANS</div>
+        <h2>Subscription <em>Posting Plans</em></h2>
+      </div>
+      <p>Select a subscription tier to start posting corporate vacancies with company logo branding.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <span class="pill">FREE STARTER</span>
+        <h3>Starter Recruiter</h3>
+        <p>For small businesses posting occasional vacancies.</p>
+        <div class="price">ETB 0 <span>/ month</span></div>
+        <ul>
+          <li>✓ 1 Active Job Vacancy Posting</li>
+          <li>✓ Basic Applicant Tracking</li>
+          <li>✕ Company Logo Branding</li>
+        </ul>
+        <button class="btn btn-outline full-btn" data-plan="starter">Select Plan</button>
+      </div>
+      <div class="pricing-card featured">
+        <span class="pill">MOST POPULAR</span>
+        <h3>Pro Employer</h3>
+        <p>For growing enterprises seeking featured talent visibility.</p>
+        <div class="price">ETB 4,500 <span>/ month</span></div>
+        <ul>
+          <li>✓ 10 Active Job & Freelance Vacancies</li>
+          <li>✓ Company Logo Branding Uploads</li>
+          <li>✓ Top-Ranked Search Visibility</li>
+          <li>✓ Featured Employer Badge</li>
+        </ul>
+        <button class="btn btn-primary full-btn" data-plan="pro">Subscribe Pro</button>
+      </div>
+      <div class="pricing-card">
+        <span class="pill">ENTERPRISE</span>
+        <h3>Corporate Unlimited</h3>
+        <p>Unlimited posting for large firms & recruiters.</p>
+        <div class="price">ETB 12,000 <span>/ month</span></div>
+        <ul>
+          <li>✓ Unlimited Job & Project Vacancies</li>
+          <li>✓ Company Logo & Testimonial Banners</li>
+          <li>✓ Dedicated Account Manager</li>
+          <li>✓ Direct Candidate Access</li>
+        </ul>
+        <button class="btn btn-outline full-btn" data-plan="enterprise">Subscribe Corporate</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Module 3: Digital Store & Academy -->
+  <section class="section store" id="store">
+    <div class="section-head">
+      <div>
+        <div class="section-label">04 / DIGITAL RESOURCES</div>
+        <h2>TATARI <em>Digital Store & Learning</em></h2>
+      </div>
+    </div>
+    <div class="catalog-grid" id="storeCatalog">
+      <div class="empty-note">Loading store resources...</div>
+    </div>
+  </section>
+
+  <!-- Contact Form -->
   <section class="section contact" id="contact">
     <div>
       <div class="section-label">LET'S WORK TOGETHER</div>
       <h2>What can we help<br/><em>you achieve?</em></h2>
-      <p>Contact our strategic consulting and talent acquisition team in Addis Ababa.</p>
-      <p><b>TATARI Consulting</b><br/>Addis Ababa, Ethiopia</p>
+      <p>Contact our team for customized employer packages or enterprise recruitment solutions.</p>
     </div>
     <form class="form-card" id="inquiryForm">
       <h3>Send an inquiry</h3>
@@ -173,11 +205,10 @@
         <label>Phone (optional)<input name="phone"/></label>
         <label>I'm interested in
           <select name="service">
-            <option>Consulting</option>
-            <option>Talent Recruitment</option>
+            <option>Employer Subscriptions</option>
+            <option>Corporate Recruitment</option>
             <option>Freelance Contracting</option>
-            <option>Professional Training</option>
-            <option>Partnership</option>
+            <option>Consulting & Analytics</option>
           </select>
         </label>
         <label class="full">How can we help?<textarea name="message" required="" rows="4"></textarea></label>
@@ -191,8 +222,7 @@
 <footer>
   <div class="footer-main">
     <a class="brand" href="#home"><span class="brand-icon">T</span><span><b>TATARI</b><small>CONSULTING</small></span></a>
-    <p>CAREERS · FREELANCE · CONSULTING · ANALYTICS</p>
-    <div><a href="#store">Digital Store</a><a href="#jobs-board">Job Board</a><a href="#freelance-hub">Freelance Hub</a><a href="#contact">Contact</a></div>
+    <p>CAREERS · LOGOS · SUBSCRIPTIONS · FREELANCE</p>
   </div>
   <small class="copyright">© <span id="year"></span> TATARI Consulting. All rights reserved.</small>
 </footer>

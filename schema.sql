@@ -1,86 +1,47 @@
--- Database setup for TATARI Platform: Store, Career Jobs, and Upwork-style Freelance Hub
+-- Database setup for TATARI Platform: Company Logos, Testimonial Banners, Subscriptions, and Admin Bypass
 
-ALTER TABLE public.products ADD COLUMN IF NOT EXISTS name_am TEXT;
-ALTER TABLE public.products ADD COLUMN IF NOT EXISTS description_am TEXT;
+-- Create Public Storage Bucket for Logos and Avatars
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('public-logos', 'public-logos', true) 
+ON CONFLICT (id) DO NOTHING;
 
-ALTER TABLE public.courses ADD COLUMN IF NOT EXISTS title_am TEXT;
-ALTER TABLE public.courses ADD COLUMN IF NOT EXISTS description_am TEXT;
+CREATE POLICY "Public Access for Logos" ON storage.objects FOR SELECT USING (bucket_id = 'public-logos');
+CREATE POLICY "Authenticated users can upload logos" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'public-logos' AND auth.role() = 'authenticated');
 
--- 1. Upwork-Style Freelance Projects Table
-CREATE TABLE IF NOT EXISTS public.jobs (
+-- 1. Add Logo Column to Career Jobs & Freelance Projects
+ALTER TABLE public.career_jobs ADD COLUMN IF NOT EXISTS company_logo TEXT;
+ALTER TABLE public.career_jobs ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'Software & Tech';
+
+ALTER TABLE public.jobs ADD COLUMN IF NOT EXISTS client_logo TEXT;
+
+-- 2. Testimonials Table
+CREATE TABLE IF NOT EXISTS public.testimonials (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    client_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    title_en TEXT NOT NULL,
-    title_am TEXT,
-    description_en TEXT NOT NULL,
-    description_am TEXT,
-    category TEXT NOT NULL,
-    budget_min NUMERIC(12,2),
-    budget_max NUMERIC(12,2),
-    currency TEXT DEFAULT 'ETB',
-    job_type TEXT DEFAULT 'Fixed-Price',
-    status TEXT DEFAULT 'open',
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    author_name TEXT NOT NULL,
+    company_title TEXT,
+    author_avatar TEXT,
+    content TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 3. Employer Subscriptions Table
+CREATE TABLE IF NOT EXISTS public.subscriptions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE,
+    plan_tier TEXT DEFAULT 'free', -- free, pro, enterprise
+    status TEXT DEFAULT 'active',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 2. Freelance Proposals Table
-CREATE TABLE IF NOT EXISTS public.proposals (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    job_id UUID REFERENCES public.jobs(id) ON DELETE CASCADE,
-    freelancer_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    bid_amount NUMERIC(12,2) NOT NULL,
-    delivery_days INT NOT NULL,
-    cover_letter TEXT NOT NULL,
-    status TEXT DEFAULT 'submitted',
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
+-- RLS Policies for Testimonials & Subscriptions
+ALTER TABLE public.testimonials ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
 
--- 3. Dedicated Full-Time / Remote Job Board Table
-CREATE TABLE IF NOT EXISTS public.career_jobs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    recruiter_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    company_name TEXT NOT NULL,
-    title_en TEXT NOT NULL,
-    title_am TEXT,
-    description_en TEXT NOT NULL,
-    description_am TEXT,
-    location TEXT DEFAULT 'Addis Ababa',
-    job_type TEXT DEFAULT 'Full-Time', -- Full-Time, Remote, Hybrid, Contract
-    salary_range TEXT,
-    status TEXT DEFAULT 'open',
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
+CREATE POLICY "Anyone can view testimonials" ON public.testimonials FOR SELECT USING (true);
+CREATE POLICY "Authenticated users can create testimonials" ON public.testimonials FOR INSERT WITH CHECK (auth.uid() = user_id);
 
--- 4. Full-Time Job Applications Table
-CREATE TABLE IF NOT EXISTS public.career_applications (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    job_id UUID REFERENCES public.career_jobs(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    applicant_name TEXT NOT NULL,
-    applicant_email TEXT NOT NULL,
-    resume_url TEXT NOT NULL,
-    notes TEXT,
-    status TEXT DEFAULT 'pending',
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Row Level Security (RLS) Policies
-ALTER TABLE public.jobs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.proposals ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.career_jobs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.career_applications ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Anyone can view open freelance projects" ON public.jobs FOR SELECT USING (status = 'open' OR auth.uid() = client_id);
-CREATE POLICY "Authenticated users can create freelance projects" ON public.jobs FOR INSERT WITH CHECK (auth.uid() = client_id);
-
-CREATE POLICY "Freelancers can view own proposals or project owners view proposals" ON public.proposals
-    FOR SELECT USING (auth.uid() = freelancer_id OR EXISTS (SELECT 1 FROM public.jobs WHERE id = proposals.job_id AND client_id = auth.uid()));
-CREATE POLICY "Authenticated freelancers can submit proposals" ON public.proposals FOR INSERT WITH CHECK (auth.uid() = freelancer_id);
-
-CREATE POLICY "Anyone can view open career jobs" ON public.career_jobs FOR SELECT USING (status = 'open' OR auth.uid() = recruiter_id);
-CREATE POLICY "Authenticated users can post career jobs" ON public.career_jobs FOR INSERT WITH CHECK (auth.uid() = recruiter_id);
-
-CREATE POLICY "Applicants or recruiters can view job applications" ON public.career_applications
-    FOR SELECT USING (auth.uid() = user_id OR EXISTS (SELECT 1 FROM public.career_jobs WHERE id = career_applications.job_id AND recruiter_id = auth.uid()));
-CREATE POLICY "Authenticated users can submit job applications" ON public.career_applications FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can view own subscription" ON public.subscriptions FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert/update subscription" ON public.subscriptions FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update subscription" ON public.subscriptions FOR UPDATE USING (auth.uid() = user_id);

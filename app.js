@@ -1,8 +1,8 @@
 (() => {
   const $ = (s, r=document) => r.querySelector(s), $$ = (s,r=document)=>[...r.querySelectorAll(s)];
   const cfg = window.TATARI_CONFIG || {};
-  let db = null, session = null, profile = null, role = 'customer',
-      products = [], courses = [], jobListings = [], freelanceProjects = [],
+  let db = null, session = null, profile = null, role = 'customer', subscriptionPlan = 'free',
+      products = [], courses = [], jobListings = [], freelanceProjects = [], testimonials = [],
       cart = loadSavedCart(), currency = 'ETB', currentLang = 'en', resumeCartAfterLogin = false;
 
   function loadSavedCart(){ try{ const v = JSON.parse(localStorage.getItem('tatari_cart_v1')||'[]'); return Array.isArray(v)?v.filter(x=>x&&typeof x.id==='string'&&['product','course'].includes(x.type)&&Number.isInteger(x.quantity)&&x.quantity>=1&&x.quantity<=20):[]; }catch(_){ return []; } }
@@ -24,9 +24,7 @@
     $('#langEN').classList.toggle('active', lang==='en');
     $('#langAM').classList.toggle('active', lang==='am');
     if (window.TATARI_I18N) window.TATARI_I18N.translate(document.body, lang);
-    renderStoreCatalog();
-    renderJobPortal();
-    renderFreelanceMarketplace();
+    renderAllViews();
   }
 
   function modal(html){
@@ -39,7 +37,7 @@
 
   function authModal(mode='signin'){
     const updating = mode === 'updatepassword';
-    modal(`<div class="section-label">TATARI ACCOUNT</div><h2>${mode==='signup'?'Create your account':mode==='reset'?'Reset password':updating?'Choose a new password':'Welcome back'}</h2><p class="muted">${mode==='signup'?'Register to buy resources, apply for jobs, or hire freelancers.':mode==='reset'?'Enter your account email to receive a reset link.':updating?'Choose a new password for your TATARI account.':'Sign in to access your portal, applications, and purchases.'}</p><form id="authForm" class="stack-form">${mode==='signup'?'<label>Full name<input name="full_name" required minlength="2"></label>':''}${mode==='reset'||mode==='signin'||mode==='signup'?'<label>Email<input name="email" type="email" required id="authEmail"></label>':''}${mode!=='reset'?`<label>${updating?'New password':'Password'}<input name="password" type="password" required minlength="8" autocomplete="new-password"></label>`:''}${updating?'<label>Confirm new password<input name="confirm_password" type="password" required minlength="8"></label>':''}<button class="btn btn-primary" type="submit">${mode==='signup'?'Create account':mode==='reset'?'Send reset link':updating?'Update password':'Sign in'}</button><p id="authFeedback" class="form-feedback"></p></form><div class="auth-switch">${mode==='signin'?'<button id="goSignup">Create an account</button><button id="goReset">Forgot password?</button>':updating?'':'<button id="goSignin">Back to sign in</button>'}</div>`);
+    modal(`<div class="section-label">TATARI ACCOUNT</div><h2>${mode==='signup'?'Create your account':mode==='reset'?'Reset password':updating?'Choose a new password':'Welcome back'}</h2><p class="muted">${mode==='signup'?'Register to buy resources, post jobs, upload logos, or bid on projects.':mode==='reset'?'Enter your account email to receive a reset link.':updating?'Choose a new password for your TATARI account.':'Sign in to access your portal, applications, and subscription.'}</p><form id="authForm" class="stack-form">${mode==='signup'?'<label>Full name<input name="full_name" required minlength="2"></label>':''}${mode==='reset'||mode==='signin'||mode==='signup'?'<label>Email<input name="email" type="email" required id="authEmail"></label>':''}${mode!=='reset'?`<label>${updating?'New password':'Password'}<input name="password" type="password" required minlength="8" autocomplete="new-password"></label>`:''}${updating?'<label>Confirm new password<input name="confirm_password" type="password" required minlength="8"></label>':''}<button class="btn btn-primary" type="submit">${mode==='signup'?'Create account':mode==='reset'?'Send reset link':updating?'Update password':'Sign in'}</button><p id="authFeedback" class="form-feedback"></p></form><div class="auth-switch">${mode==='signin'?'<button id="goSignup">Create an account</button><button id="goReset">Forgot password?</button>':updating?'':'<button id="goSignin">Back to sign in</button>'}</div>`);
     
     $('#authForm').onsubmit = async e => {
       e.preventDefault();
@@ -75,21 +73,25 @@
 
   async function refreshUser() {
     if(!session || !db) {
-      profile = null; role = 'customer';
+      profile = null; role = 'customer'; subscriptionPlan = 'free';
       $('#accountBtn').hidden = false; $('#accountBtn').textContent = 'Login';
       $('#dashboardBtn').hidden = true; $('#logoutBtn').hidden = true;
       return;
     }
     try {
-      const [pr, rr] = await Promise.all([
+      const [pr, rr, sub] = await Promise.all([
         db.from('profiles').select('*').eq('id', session.user.id).maybeSingle(),
-        db.from('user_roles').select('role').eq('user_id', session.user.id)
+        db.from('user_roles').select('role').eq('user_id', session.user.id),
+        db.from('subscriptions').select('plan_tier').eq('user_id', session.user.id).eq('status', 'active').maybeSingle()
       ]);
       profile = pr.data || null;
       const roles = (rr.data || []).map(x => x.role);
       role = roles.includes('admin') ? 'admin' : roles.includes('content_manager') ? 'content_manager' : 'customer';
+      subscriptionPlan = sub.data?.plan_tier || 'free';
+      
       $('#accountBtn').hidden = true; $('#dashboardBtn').hidden = false;
-      $('#dashboardBtn').textContent = 'My account'; $('#logoutBtn').hidden = false; $('#logoutBtn').textContent = 'Logout';
+      $('#dashboardBtn').textContent = role==='admin' ? 'Admin Portal' : 'My account';
+      $('#logoutBtn').hidden = false; $('#logoutBtn').textContent = 'Logout';
     } catch(e) {
       console.error('Error refreshing user:', e);
     }
@@ -97,42 +99,142 @@
 
   async function loadData() {
     if(!db) {
+      $('#testimonialBannerList').innerHTML = '<div class="empty">Connect Supabase to view testimonials.</div>';
       $('#storeCatalog').innerHTML = '<div class="empty">Connect Supabase to view store items.</div>';
       $('#jobPortalList').innerHTML = '<div class="empty">Connect Supabase to view jobs.</div>';
       $('#freelanceProjectList').innerHTML = '<div class="empty">Connect Supabase to view freelance projects.</div>';
       return;
     }
     try {
-      const [p, c, j, f] = await Promise.all([
+      const [p, c, j, f, t] = await Promise.all([
         db.from('products').select('*').eq('is_published', true).order('created_at', {ascending: false}),
         db.from('courses').select('*').eq('is_published', true).order('created_at', {ascending: false}),
         db.from('career_jobs').select('*').eq('status', 'open').order('created_at', {ascending: false}),
-        db.from('jobs').select('*').eq('status', 'open').order('created_at', {ascending: false})
+        db.from('jobs').select('*').eq('status', 'open').order('created_at', {ascending: false}),
+        db.from('testimonials').select('*').order('created_at', {ascending: false})
       ]);
       products = p.data || [];
       courses = c.data || [];
       jobListings = j.data || [];
       freelanceProjects = f.data || [];
+      testimonials = t.data || [];
 
-      renderStoreCatalog();
-      renderJobPortal();
-      renderFreelanceMarketplace();
+      renderAllViews();
     } catch(e) {
       console.error('Data load error:', e);
     }
   }
 
-  // 1. Digital Store & Courses Module Renderer
+  function renderAllViews() {
+    renderTestimonialBanners();
+    renderJobPortal();
+    renderFreelanceMarketplace();
+    renderStoreCatalog();
+  }
+
+  // 1. Testimonial Banners Renderer
+  function renderTestimonialBanners() {
+    $('#testimonialBannerList').innerHTML = testimonials.length ? testimonials.map(t => `
+      <div class="testimonial-card">
+        <div class="testimonial-header">
+          ${t.author_avatar ? `<img src="${esc(t.author_avatar)}" class="author-avatar" alt="Avatar"/>` : '<div class="avatar-placeholder">👤</div>'}
+          <div>
+            <b>${esc(t.author_name)}</b>
+            <small>${esc(t.company_title || 'Verified Member')}</small>
+          </div>
+        </div>
+        <p>"${esc(t.content)}"</p>
+      </div>`).join('') : '<div class="empty">No testimonials added yet. Click "+ Add Testimonial" to submit one!</div>';
+  }
+
+  // Unified Filtering Engine across Job Board, Freelance, and Store
+  function getGlobalFilterQuery() {
+    const q = ($('#globalSearchInput').value||'').toLowerCase();
+    const type = $('#globalTypeSelect').value;
+    const cat = $('#globalCategoryFilter').value;
+    return { q, type, cat };
+  }
+
+  // 2. Full-Time Career Job Portal Renderer (with Logo Upload Display)
+  function renderJobPortal() {
+    const { q, type, cat } = getGlobalFilterQuery();
+    if(type !== 'all' && type !== 'career') {
+      $('#jobPortalList').innerHTML = '<div class="empty">Filtered out by search selection. Select "Career Jobs" or "All Modules" above.</div>';
+      return;
+    }
+
+    const filtered = jobListings.filter(x => 
+      (cat==='all' || x.category===cat || x.job_type===cat) &&
+      `${x.title_en} ${x.company_name||''} ${x.description_en||''} ${x.title_am||''}`.toLowerCase().includes(q)
+    );
+
+    $('#jobPortalList').innerHTML = filtered.length ? filtered.map(j => `
+      <article class="resource-card job-card">
+        <div class="resource-art career">
+          ${j.company_logo ? `<img src="${esc(j.company_logo)}" class="company-logo-img" alt="Logo"/>` : '<span>CAREER JOB</span>'}
+          <b>🏢</b>
+        </div>
+        <div class="resource-body">
+          <span class="pill">${esc(j.job_type||'Full-Time')} · ${esc(j.location||'Addis Ababa')}</span>
+          <h3>${esc(currentLang==='am'&&j.title_am ? j.title_am : j.title_en)}</h3>
+          <p><b>${esc(j.company_name||'TATARI Partner')}</b> — ${esc(currentLang==='am'&&j.description_am ? j.description_am : j.description_en||'')}</p>
+          <div class="resource-bottom">
+            <strong>Salary: ${esc(j.salary_range||'Negotiable')}</strong>
+            <button class="btn btn-outline btn-small" data-career-id="${j.id}">Apply for Job</button>
+          </div>
+        </div>
+      </article>`).join('') : '<div class="empty">No career job vacancies match your filter parameters.</div>';
+
+    $$('[data-career-id]').forEach(b => b.onclick = (e) => { e.preventDefault(); openCareerDetails(b.dataset.careerId); });
+  }
+
+  // 3. Upwork-Style Freelance Project Marketplace Renderer
+  function renderFreelanceMarketplace() {
+    const { q, type, cat } = getGlobalFilterQuery();
+    if(type !== 'all' && type !== 'freelance') {
+      $('#freelanceProjectList').innerHTML = '<div class="empty">Filtered out by search selection. Select "Freelance Projects" or "All Modules" above.</div>';
+      return;
+    }
+
+    const filtered = freelanceProjects.filter(x => 
+      (cat==='all' || x.category===cat || x.job_type===cat) &&
+      `${x.title_en} ${x.category||''} ${x.description_en||''} ${x.title_am||''}`.toLowerCase().includes(q)
+    );
+
+    $('#freelanceProjectList').innerHTML = filtered.length ? filtered.map(j => `
+      <article class="resource-card freelance-card">
+        <div class="resource-art job">
+          ${j.client_logo ? `<img src="${esc(j.client_logo)}" class="company-logo-img" alt="Logo"/>` : '<span>FREELANCE CONTRACT</span>'}
+          <b>💼</b>
+        </div>
+        <div class="resource-body">
+          <span class="pill">${esc(j.category||'General')} · ${esc(j.job_type||'Fixed-Price')}</span>
+          <h3>${esc(currentLang==='am'&&j.title_am ? j.title_am : j.title_en)}</h3>
+          <p>${esc(currentLang==='am'&&j.description_am ? j.description_am : j.description_en||'')}</p>
+          <div class="resource-bottom">
+            <strong>Budget: ${money(j.budget_min)} - ${money(j.budget_max)}</strong>
+            <button class="btn btn-primary btn-small" data-freelance-id="${j.id}">Submit Proposal</button>
+          </div>
+        </div>
+      </article>`).join('') : '<div class="empty">No freelance project contracts match your filter parameters.</div>';
+
+    $$('[data-freelance-id]').forEach(b => b.onclick = (e) => { e.preventDefault(); openFreelanceDetails(b.dataset.freelanceId); });
+  }
+
+  // 4. Digital Store & Courses Renderer
   function renderStoreCatalog() {
-    const q = ($('#storeSearch').value||'').toLowerCase();
-    const type = $('#storeType').value;
+    const { q, type, cat } = getGlobalFilterQuery();
+    if(type !== 'all' && type !== 'store') {
+      $('#storeCatalog').innerHTML = '<div class="empty">Filtered out by search selection. Select "Digital Store" or "All Modules" above.</div>';
+      return;
+    }
 
     const catalog = [
       ...products.map(x => ({...x, itemType: 'product', displayTitle: currentLang==='am'&&x.name_am ? x.name_am : x.name})),
       ...courses.map(x => ({...x, itemType: 'course', displayTitle: currentLang==='am'&&x.title_am ? x.title_am : x.title}))
     ];
 
-    const filtered = catalog.filter(x => (type==='all' || type===x.itemType+'s') && `${x.displayTitle} ${x.description||''}`.toLowerCase().includes(q));
+    const filtered = catalog.filter(x => `${x.displayTitle} ${x.description||''}`.toLowerCase().includes(q));
 
     $('#storeCatalog').innerHTML = filtered.length ? filtered.map(x => `
       <article class="resource-card">
@@ -146,57 +248,9 @@
             ${(currency==='ETB'?x.price_etb:x.price_usd)==null?'<span class="muted">Contact TATARI</span>':`<button class="btn btn-primary btn-small" type="button" data-add="${x.id}" data-type="${x.itemType}">Add to cart</button>`}
           </div>
         </div>
-      </article>`).join('') : '<div class="empty">No products or courses match your filter.</div>';
+      </article>`).join('') : '<div class="empty">No digital products or courses match your search.</div>';
 
     $$('[data-add]').forEach(b => b.onclick = (e) => { e.preventDefault(); addCart(b.dataset.add, b.dataset.type); });
-  }
-
-  // 2. Full-Time Job Board Portal Renderer
-  function renderJobPortal() {
-    const q = ($('#jobSearch').value||'').toLowerCase();
-    const cat = $('#jobCategoryFilter').value;
-
-    const filtered = jobListings.filter(x => (cat==='all' || x.job_type===cat || x.category===cat) && `${x.title_en} ${x.company_name||''} ${x.description_en||''} ${x.title_am||''}`.toLowerCase().includes(q));
-
-    $('#jobPortalList').innerHTML = filtered.length ? filtered.map(j => `
-      <article class="resource-card job-card">
-        <div class="resource-art career"><span>CAREER JOB</span><b>🏢</b></div>
-        <div class="resource-body">
-          <span class="pill">${esc(j.job_type||'Full-Time')} · ${esc(j.location||'Addis Ababa')}</span>
-          <h3>${esc(currentLang==='am'&&j.title_am ? j.title_am : j.title_en)}</h3>
-          <p><b>${esc(j.company_name||'TATARI Partner')}</b> — ${esc(currentLang==='am'&&j.description_am ? j.description_am : j.description_en||'')}</p>
-          <div class="resource-bottom">
-            <strong>Salary: ${esc(j.salary_range||'Negotiable')}</strong>
-            <button class="btn btn-outline btn-small" data-career-id="${j.id}">Apply for Job</button>
-          </div>
-        </div>
-      </article>`).join('') : '<div class="empty">No career job openings match your search.</div>';
-
-    $$('[data-career-id]').forEach(b => b.onclick = (e) => { e.preventDefault(); openCareerDetails(b.dataset.careerId); });
-  }
-
-  // 3. Upwork-Style Freelance Project Marketplace Renderer
-  function renderFreelanceMarketplace() {
-    const q = ($('#freelanceSearch').value||'').toLowerCase();
-    const type = $('#freelanceTypeFilter').value;
-
-    const filtered = freelanceProjects.filter(x => (type==='all' || x.job_type===type) && `${x.title_en} ${x.category||''} ${x.description_en||''} ${x.title_am||''}`.toLowerCase().includes(q));
-
-    $('#freelanceProjectList').innerHTML = filtered.length ? filtered.map(j => `
-      <article class="resource-card freelance-card">
-        <div class="resource-art job"><span>FREELANCE PROJECT</span><b>💼</b></div>
-        <div class="resource-body">
-          <span class="pill">${esc(j.category||'General')} · ${esc(j.job_type||'Fixed-Price')}</span>
-          <h3>${esc(currentLang==='am'&&j.title_am ? j.title_am : j.title_en)}</h3>
-          <p>${esc(currentLang==='am'&&j.description_am ? j.description_am : j.description_en||'')}</p>
-          <div class="resource-bottom">
-            <strong>Budget: ${money(j.budget_min)} - ${money(j.budget_max)}</strong>
-            <button class="btn btn-primary btn-small" data-freelance-id="${j.id}">Submit Proposal</button>
-          </div>
-        </div>
-      </article>`).join('') : '<div class="empty">No freelance project contracts match your search.</div>';
-
-    $$('[data-freelance-id]').forEach(b => b.onclick = (e) => { e.preventDefault(); openFreelanceDetails(b.dataset.freelanceId); });
   }
 
   function addCart(id, type) {
@@ -267,22 +321,207 @@
     };
   }
 
-  // Full-time Job Details & Application Modal
+  // Handle Logo Upload Helper
+  async function uploadImageFile(file, bucketName, folderPath) {
+    if(!file || !file.size) return null;
+    if(file.size > 5 * 1024 * 1024) throw Error('File must be 5MB or smaller.');
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const path = `${folderPath}/${Date.now()}-${safeName}`;
+    const up = await db.storage.from(bucketName).upload(path, file, {upsert: true});
+    if(up.error) throw up.error;
+    const { data } = db.storage.from(bucketName).getPublicUrl(path);
+    return data.publicUrl;
+  }
+
+  // Full-time Career Job Posting Modal (with Logo Upload, Subscription Check, & Admin Bypass)
+  function postCareerJobModal() {
+    if(!session) { toast('Please sign in to post a career job.', true); authModal('signin'); return; }
+    
+    const isAdmin = role === 'admin';
+    const isSubscribed = subscriptionPlan === 'pro' || subscriptionPlan === 'enterprise';
+
+    if(!isAdmin && !isSubscribed) {
+      toast('Employer subscription required for company logo vacancy postings.', true);
+      window.location.hash = '#plans-pricing';
+      return;
+    }
+
+    modal(`
+      <div class="section-label">${isAdmin ? 'ADMIN VACANCY POSTING' : 'EMPLOYER VACANCY POSTING'}</div>
+      <h2>Create Full-Time / Remote Job Listing</h2>
+      ${isAdmin ? '<p class="admin-badge">⚡ Admin Mode: Direct posting enabled</p>' : `<p class="muted">Active Plan: <b>${subscriptionPlan.toUpperCase()}</b></p>`}
+      <form id="createCareerForm" class="stack-form">
+        <label>Job Title (English)<input name="title_en" required></label>
+        <label>Job Title (Amharic)<input name="title_am"></label>
+        <label>Company Name<input name="company_name" required></label>
+        <label>Company Logo Image (Optional)<input name="logo_file" type="file" accept="image/*"></label>
+        <div class="form-grid">
+          <label>Job Category<select name="category"><option>HR & Analytics</option><option>Software & Tech</option><option>Finance & Management</option><option>Design & Creative</option></select></label>
+          <label>Job Type<select name="job_type"><option>Full-Time</option><option>Remote</option><option>Hybrid</option><option>Contract</option></select></label>
+        </div>
+        <label>Location<input name="location" placeholder="e.g. Addis Ababa or Remote" required></label>
+        <label>Salary Range (optional)<input name="salary_range" placeholder="e.g. 25,000 - 45,000 ETB/mo"></label>
+        <label>Job Description (English)<textarea name="description_en" rows="3" required></textarea></label>
+        <label>Job Description (Amharic)<textarea name="description_am" rows="3"></textarea></label>
+        <button class="btn btn-primary" type="submit">Publish Vacancy</button>
+      </form>
+    `);
+
+    $('#createCareerForm').onsubmit = async e => {
+      e.preventDefault();
+      const btn = e.currentTarget.querySelector('button[type=submit]');
+      btn.disabled = true; btn.textContent = 'Uploading logo & publishing…';
+      try {
+        ready();
+        const fd = new FormData(e.currentTarget);
+        const logoFile = fd.get('logo_file');
+        let logoUrl = null;
+        if(logoFile && logoFile.size) {
+          logoUrl = await uploadImageFile(logoFile, 'public-logos', session.user.id);
+        }
+
+        const { error } = await db.from('career_jobs').insert({
+          recruiter_id: session.user.id, title_en: fd.get('title_en').trim(), title_am: fd.get('title_am').trim() || null,
+          company_name: fd.get('company_name').trim(), company_logo: logoUrl, category: fd.get('category'), job_type: fd.get('job_type'),
+          location: fd.get('location').trim(), salary_range: fd.get('salary_range').trim() || null,
+          description_en: fd.get('description_en').trim(), description_am: fd.get('description_am').trim() || null
+        });
+        if(error) throw error;
+        toast('Career vacancy published successfully.'); closeModal(); await loadData();
+      } catch(err) { toast(err.message, true); btn.disabled = false; }
+    };
+  }
+
+  // Upwork-Style Freelance Project Posting Modal (with Logo Upload & Subscription / Admin Check)
+  function postFreelanceProjectModal() {
+    if(!session) { toast('Please sign in to post a freelance contract.', true); authModal('signin'); return; }
+
+    const isAdmin = role === 'admin';
+    const isSubscribed = subscriptionPlan === 'pro' || subscriptionPlan === 'enterprise';
+
+    if(!isAdmin && !isSubscribed) {
+      toast('Employer subscription required for freelance contract postings.', true);
+      window.location.hash = '#plans-pricing';
+      return;
+    }
+
+    modal(`
+      <div class="section-label">${isAdmin ? 'ADMIN FREELANCE POSTING' : 'CLIENT CONTRACT POSTING'}</div>
+      <h2>Create Freelance Contract Listing</h2>
+      ${isAdmin ? '<p class="admin-badge">⚡ Admin Mode: Direct posting enabled</p>' : `<p class="muted">Active Plan: <b>${subscriptionPlan.toUpperCase()}</b></p>`}
+      <form id="createFreelanceForm" class="stack-form">
+        <label>Project Title (English)<input name="title_en" required></label>
+        <label>Project Title (Amharic)<input name="title_am"></label>
+        <label>Company / Client Logo Image (Optional)<input name="logo_file" type="file" accept="image/*"></label>
+        <label>Category / Skills Required<select name="category"><option>HR & Analytics</option><option>Software & Tech</option><option>Finance & Management</option><option>Design & Creative</option></select></label>
+        <div class="form-grid">
+          <label>Project Budget Min<input name="budget_min" type="number" step="0.01" required></label>
+          <label>Project Budget Max<input name="budget_max" type="number" step="0.01" required></label>
+        </div>
+        <label>Project Description (English)<textarea name="description_en" rows="3" required></textarea></label>
+        <label>Project Description (Amharic)<textarea name="description_am" rows="3"></textarea></label>
+        <button class="btn btn-primary" type="submit">Publish Contract</button>
+      </form>
+    `);
+
+    $('#createFreelanceForm').onsubmit = async e => {
+      e.preventDefault();
+      const btn = e.currentTarget.querySelector('button[type=submit]');
+      btn.disabled = true; btn.textContent = 'Uploading logo & publishing…';
+      try {
+        ready();
+        const fd = new FormData(e.currentTarget);
+        const logoFile = fd.get('logo_file');
+        let logoUrl = null;
+        if(logoFile && logoFile.size) {
+          logoUrl = await uploadImageFile(logoFile, 'public-logos', session.user.id);
+        }
+
+        const { error } = await db.from('jobs').insert({
+          client_id: session.user.id, title_en: fd.get('title_en').trim(), title_am: fd.get('title_am').trim() || null,
+          client_logo: logoUrl, category: fd.get('category'), budget_min: Number(fd.get('budget_min')), budget_max: Number(fd.get('budget_max')),
+          description_en: fd.get('description_en').trim(), description_am: fd.get('description_am').trim() || null
+        });
+        if(error) throw error;
+        toast('Freelance project contract published.'); closeModal(); await loadData();
+      } catch(err) { toast(err.message, true); btn.disabled = false; }
+    };
+  }
+
+  // Add Testimonial Banner Modal (with Avatar Image Upload)
+  function addTestimonialModal() {
+    if(!session) { toast('Please sign in to add a testimonial.', true); authModal('signin'); return; }
+    modal(`
+      <div class="section-label">ADD TESTIMONIAL</div>
+      <h2>Share Your Success Story</h2>
+      <form id="testimonialForm" class="stack-form">
+        <label>Your Full Name<input name="author_name" value="${esc(profile?.full_name||'')}" required></label>
+        <label>Company / Title<input name="company_title" placeholder="e.g. HR Manager at TechCorp" required></label>
+        <label>Profile Avatar Photo (Optional)<input name="avatar_file" type="file" accept="image/*"></label>
+        <label>Your Testimonial Review<textarea name="content" rows="4" required></textarea></label>
+        <button class="btn btn-primary" type="submit">Submit Testimonial</button>
+      </form>
+    `);
+
+    $('#testimonialForm').onsubmit = async e => {
+      e.preventDefault();
+      const btn = e.currentTarget.querySelector('button[type=submit]');
+      btn.disabled = true;
+      try {
+        ready();
+        const fd = new FormData(e.currentTarget);
+        const avatarFile = fd.get('avatar_file');
+        let avatarUrl = null;
+        if(avatarFile && avatarFile.size) {
+          avatarUrl = await uploadImageFile(avatarFile, 'public-logos', session.user.id);
+        }
+
+        const { error } = await db.from('testimonials').insert({
+          user_id: session.user.id, author_name: fd.get('author_name').trim(),
+          company_title: fd.get('company_title').trim(), author_avatar: avatarUrl, content: fd.get('content').trim()
+        });
+        if(error) throw error;
+        toast('Testimonial submitted successfully!'); closeModal(); await loadData();
+      } catch(err) { toast(err.message, true); btn.disabled = false; }
+    };
+  }
+
+  // Subscription Plan Selection Handler
+  async function selectSubscriptionPlan(planTier) {
+    if(!session) { toast('Please sign in to choose a subscription plan.', true); authModal('signin'); return; }
+    try {
+      ready();
+      const { error } = await db.from('subscriptions').upsert({
+        user_id: session.user.id, plan_tier: planTier, status: 'active', updated_at: new Date()
+      });
+      if(error) throw error;
+      subscriptionPlan = planTier;
+      toast(`Successfully subscribed to ${planTier.toUpperCase()} Employer Plan!`);
+      await refreshUser();
+    } catch(err) { toast(err.message, true); }
+  }
+
+  // Full-time Job Details Modal
   async function openCareerDetails(jobId) {
     const job = jobListings.find(j => String(j.id) === String(jobId));
     if(!job) return;
     modal(`
-      <div class="section-label">CAREER JOB OPENING</div>
-      <h2>${esc(currentLang==='am'&&job.title_am ? job.title_am : job.title_en)}</h2>
-      <p class="muted"><b>${esc(job.company_name||'TATARI Partner')}</b> · ${esc(job.location||'Addis Ababa')} · Salary: ${esc(job.salary_range||'Negotiable')}</p>
+      <div class="section-label">CAREER VACANCY DETAILS</div>
+      <div class="job-modal-header">
+        ${job.company_logo ? `<img src="${esc(job.company_logo)}" class="company-logo-modal" alt="Logo"/>` : ''}
+        <div>
+          <h2>${esc(currentLang==='am'&&job.title_am ? job.title_am : job.title_en)}</h2>
+          <p class="muted"><b>${esc(job.company_name||'TATARI Partner')}</b> · ${esc(job.location||'Addis Ababa')} · Salary: ${esc(job.salary_range||'Negotiable')}</p>
+        </div>
+      </div>
       <div class="job-description-box"><p>${esc(currentLang==='am'&&job.description_am ? job.description_am : job.description_en)}</p></div>
       <hr>
-      <h3>Apply for Job</h3>
+      <h3>Apply for Vacancy</h3>
       <form id="jobAppForm" class="stack-form">
-        <label>Full Name<input name="applicant_name" required></label>
-        <label>Email Address<input name="applicant_email" type="email" required></label>
+        <label>Full Name<input name="applicant_name" value="${esc(profile?.full_name||'')}" required></label>
+        <label>Email Address<input name="applicant_email" type="email" value="${esc(session?.user?.email||'')}" required></label>
         <label>Resume / CV Link (Google Drive / LinkedIn)<input name="resume_url" type="url" placeholder="https://..." required></label>
-        <label>Cover Letter / Application Note<textarea name="notes" rows="4" required></textarea></label>
+        <label>Cover Letter / Notes<textarea name="notes" rows="4" required></textarea></label>
         <button class="btn btn-primary" type="submit">Submit Application</button>
       </form>
     `);
@@ -303,14 +542,19 @@
     };
   }
 
-  // Upwork-style Freelance Project Details & Proposal Modal
+  // Upwork-style Freelance Project Details Modal
   async function openFreelanceDetails(projectId) {
     const project = freelanceProjects.find(j => String(j.id) === String(projectId));
     if(!project) return;
     modal(`
-      <div class="section-label">FREELANCE CONTRACT MARKETPLACE</div>
-      <h2>${esc(currentLang==='am'&&project.title_am ? project.title_am : project.title_en)}</h2>
-      <p class="muted">Category: ${esc(project.category)} | Budget: ${money(project.budget_min)} - ${money(project.budget_max)} (${esc(project.currency)})</p>
+      <div class="section-label">FREELANCE CONTRACT DETAILS</div>
+      <div class="job-modal-header">
+        ${project.client_logo ? `<img src="${esc(project.client_logo)}" class="company-logo-modal" alt="Logo"/>` : ''}
+        <div>
+          <h2>${esc(currentLang==='am'&&project.title_am ? project.title_am : project.title_en)}</h2>
+          <p class="muted">Category: ${esc(project.category)} | Budget: ${money(project.budget_min)} - ${money(project.budget_max)} (${esc(project.currency)})</p>
+        </div>
+      </div>
       <div class="job-description-box"><p>${esc(currentLang==='am'&&project.description_am ? project.description_am : project.description_en)}</p></div>
       <hr>
       <h3>Submit Proposal</h3>
@@ -338,79 +582,6 @@
     };
   }
 
-  // Post Full-Time Career Job Modal
-  function postCareerJobModal() {
-    if(!session) { toast('Please sign in to post a career job.', true); authModal('signin'); return; }
-    modal(`
-      <div class="section-label">POST CAREER JOB</div>
-      <h2>Create Full-Time / Remote Job Listing</h2>
-      <form id="createCareerForm" class="stack-form">
-        <label>Job Title (English)<input name="title_en" required></label>
-        <label>Job Title (Amharic)<input name="title_am"></label>
-        <label>Company Name<input name="company_name" required></label>
-        <div class="form-grid">
-          <label>Job Type<select name="job_type"><option>Full-Time</option><option>Remote</option><option>Hybrid</option><option>Contract</option></select></label>
-          <label>Location<input name="location" placeholder="e.g. Addis Ababa or Remote" required></label>
-        </div>
-        <label>Salary Range (optional)<input name="salary_range" placeholder="e.g. 25,000 - 45,000 ETB/mo"></label>
-        <label>Job Description (English)<textarea name="description_en" rows="3" required></textarea></label>
-        <label>Job Description (Amharic)<textarea name="description_am" rows="3"></textarea></label>
-        <button class="btn btn-primary" type="submit">Publish Job</button>
-      </form>
-    `);
-
-    $('#createCareerForm').onsubmit = async e => {
-      e.preventDefault();
-      try {
-        ready();
-        const fd = new FormData(e.currentTarget);
-        const { error } = await db.from('career_jobs').insert({
-          recruiter_id: session.user.id, title_en: fd.get('title_en').trim(), title_am: fd.get('title_am').trim() || null,
-          company_name: fd.get('company_name').trim(), job_type: fd.get('job_type'), location: fd.get('location').trim(),
-          salary_range: fd.get('salary_range').trim() || null, description_en: fd.get('description_en').trim(), description_am: fd.get('description_am').trim() || null
-        });
-        if(error) throw error;
-        toast('Career job posted successfully.'); closeModal(); await loadData();
-      } catch(err) { toast(err.message, true); }
-    };
-  }
-
-  // Post Upwork-Style Freelance Project Modal
-  function postFreelanceProjectModal() {
-    if(!session) { toast('Please sign in to post a project.', true); authModal('signin'); return; }
-    modal(`
-      <div class="section-label">POST FREELANCE PROJECT</div>
-      <h2>Create Upwork-Style Project Listing</h2>
-      <form id="createFreelanceForm" class="stack-form">
-        <label>Project Title (English)<input name="title_en" required></label>
-        <label>Project Title (Amharic)<input name="title_am"></label>
-        <label>Category / Skills Required<input name="category" placeholder="e.g. HR Analytics, Web Development" required></label>
-        <div class="form-grid">
-          <label>Project Budget Min<input name="budget_min" type="number" step="0.01" required></label>
-          <label>Project Budget Max<input name="budget_max" type="number" step="0.01" required></label>
-        </div>
-        <label>Project Description (English)<textarea name="description_en" rows="3" required></textarea></label>
-        <label>Project Description (Amharic)<textarea name="description_am" rows="3"></textarea></label>
-        <button class="btn btn-primary" type="submit">Publish Project</button>
-      </form>
-    `);
-
-    $('#createFreelanceForm').onsubmit = async e => {
-      e.preventDefault();
-      try {
-        ready();
-        const fd = new FormData(e.currentTarget);
-        const { error } = await db.from('jobs').insert({
-          client_id: session.user.id, title_en: fd.get('title_en').trim(), title_am: fd.get('title_am').trim() || null,
-          category: fd.get('category').trim(), budget_min: Number(fd.get('budget_min')), budget_max: Number(fd.get('budget_max')),
-          description_en: fd.get('description_en').trim(), description_am: fd.get('description_am').trim() || null
-        });
-        if(error) throw error;
-        toast('Freelance project published successfully.'); closeModal(); await loadData();
-      } catch(err) { toast(err.message, true); }
-    };
-  }
-
   async function accountModal() {
     if(!session) { authModal(); return; }
     try {
@@ -421,13 +592,14 @@
         db.from('career_jobs').select('*').eq('recruiter_id', session.user.id).order('created_at', {ascending: false})
       ]);
       modal(`
-        <div class="section-label">CUSTOMER & FREELANCE PORTAL</div>
+        <div class="section-label">${role==='admin'?'ADMIN CONTROL PORTAL':'EMPLOYER & USER PORTAL'}</div>
         <h2>Hello, ${esc(profile?.full_name || session.user.email)}</h2>
+        <p class="muted">Active Subscription: <span class="status approved">${subscriptionPlan.toUpperCase()}</span> ${role==='admin'?' (Admin Rights Active)':''}</p>
         <div class="portal-tabs">
           <button class="active" data-tab="orders">Orders (${orders.data?.length||0})</button>
-          <button data-tab="freelance">Freelance Projects (${myJobs.data?.length||0})</button>
+          <button data-tab="freelance">Freelance Contracts (${myJobs.data?.length||0})</button>
           <button data-tab="proposals">Proposals (${myProposals.data?.length||0})</button>
-          <button data-tab="careers">Posted Career Jobs (${myCareers.data?.length||0})</button>
+          <button data-tab="careers">Posted Vacancies (${myCareers.data?.length||0})</button>
         </div>
         <div id="portalContent">${ordersHTML(orders.data||[])}</div>
         <div class="portal-foot"><span>${esc(session.user.email)}</span><button id="signOut" class="btn btn-outline btn-small">Logout</button></div>
@@ -438,9 +610,9 @@
         tabs.forEach(x => x.classList.toggle('active', x===t));
         const c = $('#portalContent');
         if(t.dataset.tab === 'orders') c.innerHTML = ordersHTML(orders.data||[]);
-        if(t.dataset.tab === 'freelance') c.innerHTML = (myJobs.data||[]).map(j => `<div class="order-card"><div><b>${esc(j.title_en)}</b><small>Status: ${esc(j.status)}</small></div></div>`).join('') || '<div class="empty">No freelance projects posted.</div>';
+        if(t.dataset.tab === 'freelance') c.innerHTML = (myJobs.data||[]).map(j => `<div class="order-card"><div><b>${esc(j.title_en)}</b><small>Status: ${esc(j.status)}</small></div></div>`).join('') || '<div class="empty">No freelance contracts posted.</div>';
         if(t.dataset.tab === 'proposals') c.innerHTML = (myProposals.data||[]).map(p => `<div class="order-card"><div><b>${esc(p.jobs?.title_en||'Project')}</b><small>Bid: ${money(p.bid_amount)} · Status: ${esc(p.status)}</small></div></div>`).join('') || '<div class="empty">No proposals submitted.</div>';
-        if(t.dataset.tab === 'careers') c.innerHTML = (myCareers.data||[]).map(j => `<div class="order-card"><div><b>${esc(j.title_en)}</b><small>Company: ${esc(j.company_name)} · Status: ${esc(j.status)}</small></div></div>`).join('') || '<div class="empty">No career jobs posted.</div>';
+        if(t.dataset.tab === 'careers') c.innerHTML = (myCareers.data||[]).map(j => `<div class="order-card"><div><b>${esc(j.title_en)}</b><small>Company: ${esc(j.company_name)} · Status: ${esc(j.status)}</small></div></div>`).join('') || '<div class="empty">No career vacancies posted.</div>';
       });
       $('#signOut').onclick = async () => { await db.auth.signOut(); session = null; await refreshUser(); closeModal(); toast('Signed out.'); };
     } catch(e) { toast(err(e), true); }
@@ -471,16 +643,16 @@
     $('#langEN').onclick = () => setLanguage('en');
     $('#langAM').onclick = () => setLanguage('am');
     
+    $('#addTestimonialBtn').onclick = () => addTestimonialModal();
     $('#postFullTimeJobBtn').onclick = () => postCareerJobModal();
     $('#postFreelanceProjectBtn').onclick = () => postFreelanceProjectModal();
-    
-    $('#storeSearch').oninput = renderStoreCatalog;
-    $('#storeType').onchange = renderStoreCatalog;
-    $('#jobSearch').oninput = renderJobPortal;
-    $('#jobCategoryFilter').onchange = renderJobPortal;
-    $('#freelanceSearch').oninput = renderFreelanceMarketplace;
-    $('#freelanceTypeFilter').onchange = renderFreelanceMarketplace;
-    
+
+    $$('[data-plan]').forEach(b => b.onclick = () => selectSubscriptionPlan(b.dataset.plan));
+
+    $('#globalSearchInput').oninput = renderAllViews;
+    $('#globalTypeSelect').onchange = renderAllViews;
+    $('#globalCategoryFilter').onchange = renderAllViews;
+
     $('#inquiryForm').onsubmit = submitInquiry;
 
     if(cfg.url && cfg.publishableKey && window.supabase?.createClient) {
