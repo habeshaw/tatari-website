@@ -1,8 +1,12 @@
-# TATARI Consulting — Fully Functional Multilingual Job Portal (v3)
+# TATARI Consulting — Bilingual Job Board & Freelance Marketplace (v4)
 
-## Features
-- **Live Supabase Integration**: Real cloud authentication, data tables, and RLS security.
-- **Bilingual English & Amharic**: Professional Amharic typography (Noto Sans Ethiopic) and natural sentence structures.
-- **Job & Freelance Search Engine**: Filter by keyword, location, salary, category, and work type.
-- **Candidate & Employer Dashboards**: Real application tracking, vacancy publishing, and subscription upgrades.
-- **Data Export**: Export candidate applications directly to CSV and Excel spreadsheet files.
+## Included Files
+- `index.html`: Unified Landing Page (Consulting Divisions + Dual-Action Hero Search + Live Preview)
+- `jobs.html`: Indeed-Style Ethiopian Job Board
+- `freelance.html`: Upwork-Style Freelance Marketplace & Vetted Talent Directory
+- `dashboard.html`: Role-Based Workspace (Job Seeker/Freelancer, Employer/Client, Admin)
+- `app.js` & `i18n.js`: Full Bilingual (English & Amharic) Engine + Supabase Integration
+- `style.css`: Responsive Theme (`#10243b` Navy, `#15a99a` Teal, `Noto Sans Ethiopic`)
+- `schema.sql`: Supabase PostgreSQL Tables & Row-Level Security (RLS) Policies
+- `supabase-config.js`: Supabase Project URL & Publishable Key
+- `vercel.json`: Clean URL routing for Vercel/Netlify

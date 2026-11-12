@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title data-i18n="fl_page_title">Freelance Marketplace — TATARI Upwork-Style Hub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Ethiopic:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body data-page="freelance">
+  <header class="topbar">
+    <a class="brand" href="index.html"><span class="brand-icon">T</span><span><b>TATARI</b><small>FREELANCE</small></span></a>
+    <button class="mobile-menu" id="mobileMenu" type="button">☰</button>
+    <nav id="nav">
+      <a href="index.html" data-i18n="nav_home">Home</a>
+      <a href="index.html#consulting" data-i18n="nav_consulting">Consulting Services</a>
+      <a href="jobs.html" data-i18n="nav_jobs">Find Jobs</a>
+      <a href="freelance.html" class="active-link" data-i18n="nav_freelance">Freelance Marketplace</a>
+      <a href="dashboard.html" data-i18n="nav_dashboard">Dashboard</a>
+    </nav>
+    <div class="head-actions">
+      <div class="lang-switch">
+        <button class="lang-btn active" id="langEN" type="button">EN</button>
+        <button class="lang-btn" id="langAM" type="button">አማ</button>
+      </div>
+      <button class="btn btn-primary btn-small" id="openPostProjectModalBtn" type="button" data-i18n="btn_post_project">+ Post Freelance Project</button>
+      <button class="btn btn-outline btn-small" id="accountBtn" type="button" data-i18n="btn_login">Login / Sign Up</button>
+      <button class="btn btn-outline btn-small" id="logoutBtn" hidden type="button" data-i18n="btn_logout">Logout</button>
+    </div>
+  </header>
+
+  <main class="section">
+    <div class="section-head">
+      <div>
+        <div class="section-label" data-i18n="fl_eyebrow">UPWORK-STYLE ETHIOPIAN GIG & TALENT MARKETPLACE</div>
+        <h1 style="font-size:36px; margin:8px 0;" data-i18n="fl_heading">Freelance <em>Projects & Vetted Talent</em></h1>
+      </div>
+    </div>
+
+    <div class="module-select-tabs" id="freelanceSubTabs">
+      <button class="tab-btn active" data-fl-view="projects" type="button" data-i18n="tab_fl_projects">💼 Open Freelance Projects (Bid Now)</button>
+      <button class="tab-btn" data-fl-view="talent" type="button" data-i18n="tab_fl_talent">👨‍💻 Vetted Ethiopian Freelancers</button>
+    </div>
+
+    <div class="search-filter-box">
+      <div class="filter-grid" style="grid-template-columns: 2fr 1fr 1fr;">
+        <div class="field">
+          <label for="flFilterKeyword" data-i18n="lbl_search_skill">Search Project or Freelancer Skill</label>
+          <input id="flFilterKeyword" placeholder="e.g. Power Query, HR Policy, React, Accounting, Translation..."/>
+        </div>
+        <div class="field">
+          <label for="flFilterCategory" data-i18n="lbl_category">Category</label>
+          <select id="flFilterCategory">
+            <option value="all" data-i18n="opt_all_sectors">All Categories</option>
+            <option value="IT & Data">IT & Data</option>
+            <option value="HR & Admin">HR & Admin</option>
+            <option value="Finance">Finance</option>
+            <option value="Design & Creative">Design & Creative</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="flFilterBudget" data-i18n="lbl_min_budget">Min Budget / Rate (ETB)</label>
+          <input id="flFilterBudget" type="number" min="0" placeholder="e.g. 5000"/>
+        </div>
+      </div>
+    </div>
+
+    <div class="catalog-grid" id="freelanceMarketplaceGrid">
+      <div class="empty" data-i18n="loading_opportunities">Loading marketplace...</div>
+    </div>
+  </main>
+
+  <div id="modalRoot"></div>
+  <div id="toast" role="status"></div>
+
+  <script src="supabase-config.js"></script>
+  <script src="i18n.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title data-i18n="jobs_page_title">Find Jobs in Ethiopia — TATARI Job Board</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Ethiopic:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body data-page="jobs">
+  <header class="topbar">
+    <a class="brand" href="index.html"><span class="brand-icon">T</span><span><b>TATARI</b><small>JOB BOARD</small></span></a>
+    <button class="mobile-menu" id="mobileMenu" type="button">☰</button>
+    <nav id="nav">
+      <a href="index.html" data-i18n="nav_home">Home</a>
+      <a href="index.html#consulting" data-i18n="nav_consulting">Consulting Services</a>
+      <a href="jobs.html" class="active-link" data-i18n="nav_jobs">Find Jobs</a>
+      <a href="freelance.html" data-i18n="nav_freelance">Freelance Marketplace</a>
+      <a href="dashboard.html" data-i18n="nav_dashboard">Dashboard</a>
+    </nav>
+    <div class="head-actions">
+      <div class="lang-switch">
+        <button class="lang-btn active" id="langEN" type="button">EN</button>
+        <button class="lang-btn" id="langAM" type="button">አማ</button>
+      </div>
+      <button class="btn btn-primary btn-small" id="openPostJobModalBtn" type="button" data-i18n="btn_post_job">+ Post a Job</button>
+      <button class="btn btn-outline btn-small" id="accountBtn" type="button" data-i18n="btn_login">Login / Sign Up</button>
+      <button class="btn btn-outline btn-small" id="logoutBtn" hidden type="button" data-i18n="btn_logout">Logout</button>
+    </div>
+  </header>
+
+  <main class="section">
+    <div class="section-head">
+      <div>
+        <div class="section-label" data-i18n="jobs_eyebrow">INDEED-STYLE ETHIOPIAN CAREER PORTAL</div>
+        <h1 style="font-size:36px; margin:8px 0;" data-i18n="jobs_heading">Find Full-Time & Part-Time <em>Jobs</em></h1>
+      </div>
+    </div>
+
+    <div class="search-filter-box">
+      <div class="filter-grid">
+        <div class="field">
+          <label for="jobFilterKeyword" data-i18n="lbl_keyword">Job Title / Keyword</label>
+          <input id="jobFilterKeyword" data-i18n-placeholder="ph_keyword" placeholder="e.g. HR Officer, Accountant, Nurse..."/>
+        </div>
+        <div class="field">
+          <label for="jobFilterCategory" data-i18n="lbl_category">Category</label>
+          <select id="jobFilterCategory">
+            <option value="all" data-i18n="opt_all_sectors">All Categories</option>
+            <option value="IT & Data">IT & Data</option>
+            <option value="HR & Admin">HR & Admin</option>
+            <option value="Finance">Finance</option>
+            <option value="Engineering">Engineering</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="NGO">NGO & Development</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="jobFilterType" data-i18n="lbl_worktype">Job Type</label>
+          <select id="jobFilterType">
+            <option value="all" data-i18n="opt_all_types">All Job Types</option>
+            <option value="Full-time">Full-time</option>
+            <option value="Part-time">Part-time</option>
+            <option value="Contract">Contract</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="jobFilterLocation" data-i18n="lbl_location">Location</label>
+          <select id="jobFilterLocation">
+            <option value="all" data-i18n="opt_all_locations">All Locations</option>
+            <option value="Addis Ababa">Addis Ababa</option>
+            <option value="Sheger City">Sheger City</option>
+            <option value="Remote">Remote</option>
+            <option value="Regional">Regional (Adama, Hawassa, Bahir Dar)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="jobFilterSalary" data-i18n="lbl_salary">Min Salary (ETB/mo)</label>
+          <input id="jobFilterSalary" type="number" min="0" placeholder="e.g. 15000"/>
+        </div>
+      </div>
+    </div>
+
+    <div class="catalog-grid" id="jobsBoardGrid">
+      <div class="empty" data-i18n="loading_opportunities">Loading jobs...</div>
+    </div>
+  </main>
+
+  <div id="modalRoot"></div>
+  <div id="toast" role="status"></div>
+
+  <script src="supabase-config.js"></script>
+  <script src="i18n.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

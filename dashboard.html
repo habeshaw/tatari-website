@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title data-i18n="dash_page_title">Workspace Dashboard — TATARI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Ethiopic:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body data-page="dashboard">
+  <header class="topbar">
+    <a class="brand" href="index.html"><span class="brand-icon">T</span><span><b>TATARI</b><small>WORKSPACE</small></span></a>
+    <button class="mobile-menu" id="mobileMenu" type="button">☰</button>
+    <nav id="nav">
+      <a href="index.html" data-i18n="nav_home">Home</a>
+      <a href="jobs.html" data-i18n="nav_jobs">Find Jobs</a>
+      <a href="freelance.html" data-i18n="nav_freelance">Freelance Marketplace</a>
+      <a href="dashboard.html" class="active-link" data-i18n="nav_dashboard">Dashboard</a>
+    </nav>
+    <div class="head-actions">
+      <div class="lang-switch">
+        <button class="lang-btn active" id="langEN" type="button">EN</button>
+        <button class="lang-btn" id="langAM" type="button">አማ</button>
+      </div>
+      <button class="btn btn-outline btn-small" id="accountBtn" type="button" data-i18n="btn_login">Login / Sign Up</button>
+      <button class="btn btn-outline btn-small" id="logoutBtn" hidden type="button" data-i18n="btn_logout">Logout</button>
+    </div>
+  </header>
+
+  <main class="section">
+    <div class="section-head">
+      <div>
+        <div class="section-label" data-i18n="dash_eyebrow">UNIFIED ROLE-BASED PORTAL</div>
+        <h1 style="font-size:34px; margin:8px 0;" id="dashWelcomeHeading">My Workspace Dashboard</h1>
+      </div>
+      <div class="head-btn-group">
+        <select id="activeRoleSelector" style="width:auto; font-weight:700;">
+          <option value="seeker">Role: Job Seeker / Freelancer</option>
+          <option value="employer">Role: Employer / Client</option>
+          <option value="admin">Role: Admin (TATARI)</option>
+        </select>
+        <button class="btn btn-outline btn-small" id="exportCsvBtn" type="button">Export CSV</button>
+      </div>
+    </div>
+
+    <div id="dashboardContentArea">
+      <div class="empty">Loading your workspace...</div>
+    </div>
+  </main>
+
+  <div id="modalRoot"></div>
+  <div id="toast" role="status"></div>
+
+  <script src="supabase-config.js"></script>
+  <script src="i18n.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

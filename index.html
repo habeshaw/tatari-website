@@ -1,230 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width,initial-scale=1" name="viewport"/>
-<meta content="#10243b" name="theme-color"/>
-<meta content="TATARI Consulting — Bilingual Job Portal & Digital Learning Marketplace in Ethiopia." name="description"/>
-<title data-i18n="page_title">TATARI — Global Job Search Engine & Digital Learning Hub</title>
-<link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+Ethiopic:wght@400;500;700&display=swap" rel="stylesheet"/>
-<link href="style.css" rel="stylesheet"/>
-<script onerror="this.onerror=null;this.src='https://unpkg.com/@supabase/supabase-js@2'" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="theme-color" content="#10243b"/>
+  <title data-i18n="page_title">TATARI — Consulting, Ethiopian Job Board & Freelance Marketplace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Ethiopic:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body>
-<header class="topbar">
-  <a class="brand" href="#home"><span class="brand-icon">T</span><span><b>TATARI</b><small>CONSULTING</small></span></a>
-  <button aria-label="Open menu" class="mobile-menu" id="mobileMenu" type="button">☰</button>
-  <nav id="nav">
-    <a href="#home" data-i18n="nav_home">Home</a>
-    <a href="#search-engine" data-i18n="nav_search">Job Search Engine</a>
-    <a href="#testimonials-section" data-i18n="nav_testimonials">Testimonials</a>
-    <a href="#plans-pricing" data-i18n="nav_plans">Subscription Plans</a>
-    <a href="#contact" data-i18n="nav_contact">Contact</a>
-  </nav>
-  <div class="head-actions">
-    <div class="lang-switch">
-      <button class="lang-btn active" id="langEN" type="button">EN</button>
-      <button class="lang-btn" id="langAM" type="button">አማ</button>
-    </div>
-    <button aria-label="Login" class="btn btn-outline btn-small" id="accountBtn" type="button" data-i18n="btn_login">Login / Register</button>
-    <button class="btn btn-primary btn-small" hidden="" id="dashboardBtn" type="button" data-i18n="btn_dashboard">My Dashboard</button>
-    <button aria-label="Logout" class="btn btn-outline btn-small" hidden="" id="logoutBtn" type="button" data-i18n="btn_logout">Logout</button>
-  </div>
-</header>
-
-<main>
-  <!-- Hero Section -->
-  <section class="hero" id="home">
-    <div class="hero-copy">
-      <span class="eyebrow" data-i18n="hero_eyebrow">LIVE SUPABASE CLOUD SYNC · BILINGUAL ETHIOPIAN JOB & FREELANCE PORTAL</span>
-      <h1 data-i18n="hero_title">People. Data. Technology.<br/><em>Growth.</em></h1>
-      <p data-i18n="hero_desc">Connect directly to live Supabase backend database for corporate career jobs, freelance project contracts, and secure candidate tracking.</p>
-      <div class="hero-ctas">
-        <a class="btn btn-primary" href="#search-engine" data-i18n="hero_cta1">Explore Live Search Engine ↗</a>
-        <a class="btn btn-ghost" href="#plans-pricing" data-i18n="hero_cta2">Employer Packages</a>
+<body data-page="home">
+  <header class="topbar">
+    <a class="brand" href="index.html">
+      <span class="brand-icon">T</span>
+      <span><b>TATARI</b><small>PEOPLE · DATA · TECH</small></span>
+    </a>
+    <button class="mobile-menu" id="mobileMenu" type="button" aria-label="Menu">☰</button>
+    <nav id="nav">
+      <a href="index.html" class="active-link" data-i18n="nav_home">Home</a>
+      <a href="#consulting" data-i18n="nav_consulting">Consulting Services</a>
+      <a href="jobs.html" data-i18n="nav_jobs">Find Jobs</a>
+      <a href="freelance.html" data-i18n="nav_freelance">Freelance Marketplace</a>
+      <a href="dashboard.html" id="navDashboardLink" data-i18n="nav_dashboard">Dashboard</a>
+    </nav>
+    <div class="head-actions">
+      <div class="lang-switch" role="group" aria-label="Language switcher">
+        <button class="lang-btn active" id="langEN" type="button">EN</button>
+        <button class="lang-btn" id="langAM" type="button">አማ</button>
       </div>
-      <div class="hero-proof"><span data-i18n="hero_proof_star">✦</span> <span data-i18n="hero_proof_text">Addis Ababa, Ethiopia · Real-time RLS Security & Instant CSV/Excel Data Exports.</span></div>
+      <button class="btn btn-primary btn-small" id="postQuickBtn" type="button" data-i18n="nav_post">+ Post Job / Project</button>
+      <button class="btn btn-outline btn-small" id="accountBtn" type="button" data-i18n="btn_login">Login / Sign Up</button>
+      <button class="btn btn-outline btn-small" id="logoutBtn" hidden type="button" data-i18n="btn_logout">Logout</button>
     </div>
-    <div class="hero-visual">
-      <div class="visual-ring ring1"></div>
-      <div class="visual-ring ring2"></div>
-      <div class="visual-center">T</div>
-      <span class="orbit-tag tag1" data-i18n="tag_careers">CAREERS</span><span class="orbit-tag tag2" data-i18n="tag_logos">LOGOS</span><span class="orbit-tag tag3" data-i18n="tag_export">SUPABASE RLS</span><span class="orbit-tag tag4" data-i18n="tag_subs">SUBSCRIPTIONS</span>
-    </div>
-  </section>
+  </header>
 
-  <!-- Live Search Engine Module -->
-  <section class="section search-engine-section" id="search-engine">
-    <div class="section-head">
-      <div>
-        <div class="section-label" data-i18n="search_eyebrow">LIVE SUPABASE DATABASE SYNC</div>
-        <h2 data-i18n="search_title">Global Job & Freelance <em>Search Engine</em></h2>
-      </div>
-      <div class="head-btn-group">
-        <button class="btn btn-primary btn-small" id="postListingBtn" type="button" data-i18n="btn_post_vacancy">+ Post New Vacancy / Project</button>
-      </div>
-    </div>
+  <main>
+    <section class="hero" id="home">
+      <div class="hero-copy">
+        <span class="eyebrow" data-i18n="hero_eyebrow">ETHIOPIA'S ALL-IN-ONE TALENT, FREELANCE & CONSULTING HUB</span>
+        <h1 data-i18n="hero_title">People. Data. Technology.<br/><em>Growth.</em></h1>
+        <p class="hero-sub" data-i18n="hero_desc">Hire vetted Ethiopian professionals, bid on freelance projects, find full-time careers, or automate your business with TATARI Consulting.</p>
 
-    <!-- Selectable Module Filter Tabs -->
-    <div class="module-select-tabs" id="moduleSelectTabs">
-      <button class="tab-btn active" data-module="all" type="button" data-i18n="tab_all">🔍 All Opportunities</button>
-      <button class="tab-btn" data-module="career" type="button" data-i18n="tab_career">🏢 Full-Time & Career Jobs</button>
-      <button class="tab-btn" data-module="freelance" type="button" data-i18n="tab_freelance">💼 Freelance Projects</button>
-      <button class="tab-btn" data-module="store" type="button" data-i18n="tab_store">✦ Digital Store & Courses</button>
-    </div>
-
-    <!-- Granular Filters -->
-    <div class="search-filter-box">
-      <div class="filter-grid">
-        <div class="field">
-          <label for="filterKeyword" data-i18n="lbl_keyword">Job Title / Keyword</label>
-          <input id="filterKeyword" data-i18n-placeholder="ph_keyword" placeholder="e.g. HR Manager, Python Developer, Accountant..."/>
-        </div>
-        <div class="field">
-          <label for="filterLocation" data-i18n="lbl_location">Location</label>
-          <input id="filterLocation" data-i18n-placeholder="ph_location" placeholder="e.g. Addis Ababa, Remote, Hawassa..."/>
-        </div>
-        <div class="field">
-          <label for="filterSalary" data-i18n="lbl_salary">Minimum Salary / Budget (ETB)</label>
-          <input id="filterSalary" min="0" data-i18n-placeholder="ph_salary" placeholder="e.g. 20000" type="number"/>
-        </div>
-        <div class="field">
-          <label for="filterCategory" data-i18n="lbl_category">Category / Sector</label>
-          <select id="filterCategory">
-            <option value="all" data-i18n="opt_all_sectors">All Sectors</option>
-            <option value="HR & Analytics" data-i18n="opt_hr">HR & Analytics</option>
-            <option value="Software & Tech" data-i18n="opt_tech">Software & Tech</option>
-            <option value="Finance & Management" data-i18n="opt_finance">Finance & Management</option>
-            <option value="Design & Creative" data-i18n="opt_design">Design & Creative</option>
+        <form class="hero-search-bar" id="heroSearchForm">
+          <select id="heroSearchMode" aria-label="Search Mode">
+            <option value="jobs" data-i18n="mode_jobs">🏢 Jobs (Indeed Mode)</option>
+            <option value="freelance" data-i18n="mode_freelance">💼 Freelance Gigs (Upwork Mode)</option>
+            <option value="consulting" data-i18n="mode_consulting">📊 Consulting Solutions</option>
           </select>
-        </div>
-        <div class="field">
-          <label for="filterWorkType" data-i18n="lbl_worktype">Work Type</label>
-          <select id="filterWorkType">
-            <option value="all" data-i18n="opt_all_types">All Work Types</option>
-            <option value="Full-Time" data-i18n="opt_fulltime">Full-Time</option>
-            <option value="Remote" data-i18n="opt_remote">Remote</option>
-            <option value="Hybrid" data-i18n="opt_hybrid">Hybrid</option>
-            <option value="Contract" data-i18n="opt_contract">Contract / Project</option>
-          </select>
+          <input type="text" id="heroSearchInput" data-i18n-placeholder="ph_hero_search" placeholder="Search job titles, Power Query, HR, Python, Addis Ababa..."/>
+          <button type="submit" class="btn btn-primary" data-i18n="btn_search">Search ↗</button>
+        </form>
+
+        <div class="hero-proof">
+          <span>✦</span> <span data-i18n="hero_proof_text">Addis Ababa & Sheger City · Bilingual (EN/አማ) · ETB Budgeting & Live Tracking</span>
         </div>
       </div>
-    </div>
 
-    <!-- Filtered Results Grid -->
-    <div class="catalog-grid" id="searchResultsGrid">
-      <div class="empty-note" data-i18n="loading_opportunities">Connecting to Supabase and loading live records...</div>
-    </div>
-  </section>
+      <div class="hero-visual">
+        <div class="visual-ring ring1"></div>
+        <div class="visual-ring ring2"></div>
+        <div class="visual-center">T</div>
+        <span class="orbit-tag tag1" data-i18n="tag_jobs">LOCAL JOBS</span>
+        <span class="orbit-tag tag2" data-i18n="tag_freelance">FREELANCE BIDS</span>
+        <span class="orbit-tag tag3" data-i18n="tag_analytics">POWER QUERY</span>
+        <span class="orbit-tag tag4" data-i18n="tag_hr">HR SYSTEMS</span>
+      </div>
+    </section>
 
-  <!-- Employer Subscription Plans Section -->
-  <section class="section pricing-section" id="plans-pricing">
-    <div class="section-head">
+    <section class="section" id="consulting">
+      <div class="section-head">
+        <div>
+          <div class="section-label" data-i18n="cons_eyebrow">MANAGEMENT & TECHNOLOGY ADVISORY</div>
+          <h2 data-i18n="cons_title">TATARI Consulting <em>Divisions & Solutions</em></h2>
+        </div>
+        <a href="#contact" class="btn btn-outline btn-small" data-i18n="btn_request_demo">Book Free Sample Dashboard ↗</a>
+      </div>
+
+      <div class="divisions-grid">
+        <article class="division-card">
+          <span class="pill">TATARI PEOPLE</span>
+          <h3 data-i18n="div_people_t">HR Systems & Org Design</h3>
+          <p data-i18n="div_people_d">SME HR Starter Packages, Job Descriptions, Job Evaluation, Salary Scales, and Ethiopian Labor Law Policy Packs (ETB 15,000 – 40,000).</p>
+        </article>
+        <article class="division-card">
+          <span class="pill">TATARI ANALYTICS</span>
+          <h3 data-i18n="div_anl_t">Power Query & KPI Dashboards</h3>
+          <p data-i18n="div_anl_d">Automated Excel/Power Query ETL reporting pipelines, HR analytics, and cross-functional KPI dashboards (ETB 5,000 – 20,000).</p>
+        </article>
+        <article class="division-card">
+          <span class="pill">TATARI DIGITAL</span>
+          <h3 data-i18n="div_dig_t">Reporting Automation Retainers</h3>
+          <p data-i18n="div_dig_d">Process mapping, digital HR workflows, and monthly automated report maintenance retainers (ETB 3,000 – 8,000/mo).</p>
+        </article>
+        <article class="division-card">
+          <span class="pill">TATARI ACADEMY</span>
+          <h3 data-i18n="div_acad_t">Corporate Workshops & Templates</h3>
+          <p data-i18n="div_acad_d">Hands-on 1-day & 2-day Excel, Power Query, and HR Analytics corporate training plus reusable digital templates.</p>
+        </article>
+        <article class="division-card">
+          <span class="pill">TATARI INNOVATION</span>
+          <h3 data-i18n="div_inn_t">Digital Transformation Advisory</h3>
+          <p data-i18n="div_inn_d">Technology adoption roadmaps and innovation strategy sessions for Ethiopian startups and growing SMEs.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" style="background:var(--paper); border-top:1px solid var(--line);">
+      <div class="section-head">
+        <div>
+          <div class="section-label" data-i18n="live_eyebrow">LIVE MARKETPLACE FEED</div>
+          <h2 data-i18n="live_title">Latest <em>Jobs & Freelance Projects</em></h2>
+        </div>
+        <div class="head-btn-group">
+          <a href="jobs.html" class="btn btn-outline btn-small" data-i18n="btn_all_jobs">View All Jobs →</a>
+          <a href="freelance.html" class="btn btn-primary btn-small" data-i18n="btn_all_gigs">Browse Freelance Gigs →</a>
+        </div>
+      </div>
+
+      <div class="catalog-grid" id="homeLivePreviewGrid">
+        <div class="empty" data-i18n="loading_opportunities">Loading live jobs and freelance projects...</div>
+      </div>
+    </section>
+
+    <section class="section contact" id="contact">
       <div>
-        <div class="section-label" data-i18n="pricing_eyebrow">SUBSCRIPTION TIERS</div>
-        <h2 data-i18n="pricing_title">Employer <em>Posting Packages</em></h2>
+        <div class="section-label" data-i18n="contact_eyebrow">LET'S WORK TOGETHER</div>
+        <h2 data-i18n="contact_title">Request a Demo Dashboard<br/><em>or Custom Advisory</em></h2>
+        <p data-i18n="contact_desc">Send us a sample of your monthly report and we will demonstrate an automated Power Query dashboard tailored to your organization.</p>
       </div>
-      <p data-i18n="pricing_subtitle">Choose an employer package to publish vacancies with company logo branding and top search placement.</p>
-    </div>
-    <div class="pricing-grid">
-      <div class="pricing-card">
-        <span class="pill" data-i18n="plan1_pill">FREE STARTER</span>
-        <h3 data-i18n="plan1_title">Starter Employer</h3>
-        <p data-i18n="plan1_desc">Basic tier for single job vacancies.</p>
-        <div class="price">ETB 0 <span data-i18n="per_month">/ month</span></div>
-        <ul>
-          <li data-i18n="plan1_f1">✓ 1 Active Vacancy Listing</li>
-          <li data-i18n="plan1_f2">✓ Basic Candidate Tracker</li>
-          <li data-i18n="plan1_f3">✕ Logo Upload Branding</li>
-        </ul>
-        <button class="btn btn-outline full-btn" data-plan-modal="starter" type="button" data-i18n="btn_sub_details">View Details & Subscribe</button>
-      </div>
-      <div class="pricing-card featured">
-        <span class="pill" data-i18n="plan2_pill">MOST POPULAR</span>
-        <h3 data-i18n="plan2_title">Pro Employer</h3>
-        <p data-i18n="plan2_desc">For growing organizations and recruitment agencies.</p>
-        <div class="price">ETB 4,500 <span data-i18n="per_month">/ month</span></div>
-        <ul>
-          <li data-i18n="plan2_f1">✓ 10 Active Job & Freelance Vacancies</li>
-          <li data-i18n="plan2_f2">✓ Company Logo Branding Uploads</li>
-          <li data-i18n="plan2_f3">✓ High-Priority Search Placement</li>
-          <li data-i18n="plan2_f4">✓ Candidate CV Export Tools</li>
-        </ul>
-        <button class="btn btn-primary full-btn" data-plan-modal="pro" type="button" data-i18n="btn_sub_details">View Details & Subscribe</button>
-      </div>
-      <div class="pricing-card">
-        <span class="pill" data-i18n="plan3_pill">ENTERPRISE</span>
-        <h3 data-i18n="plan3_title">Corporate Unlimited</h3>
-        <p data-i18n="plan3_desc">Unlimited recruitment for large enterprises.</p>
-        <div class="price">ETB 12,000 <span data-i18n="per_month">/ month</span></div>
-        <ul>
-          <li data-i18n="plan3_f1">✓ Unlimited Vacancies & Freelance Contracts</li>
-          <li data-i18n="plan3_f2">✓ Company Logo & Testimonial Banners</li>
-          <li data-i18n="plan3_f3">✓ Dedicated Account Management</li>
-          <li data-i18n="plan3_f4">✓ Admin Priority Direct Approval</li>
-        </ul>
-        <button class="btn btn-outline full-btn" data-plan-modal="enterprise" type="button" data-i18n="btn_sub_details">View Details & Subscribe</button>
-      </div>
-    </div>
-  </section>
+      <form class="form-card" id="inquiryForm">
+        <h3 data-i18n="form_inquiry_title">Send an inquiry</h3>
+        <div class="form-grid">
+          <label><span data-i18n="lbl_your_name">Your name</span><input name="name" required minlength="2"/></label>
+          <label><span data-i18n="lbl_email">Email address</span><input name="email" type="email" required/></label>
+          <label><span data-i18n="lbl_phone">Phone / WhatsApp</span><input name="phone" placeholder="+251 9..."/></label>
+          <label><span data-i18n="lbl_interest">Service Division</span>
+            <select name="service">
+              <option>TATARI Analytics (Power Query / Dashboard)</option>
+              <option>TATARI People (SME HR Starter Package)</option>
+              <option>TATARI Academy (Corporate Training)</option>
+              <option>TATARI Digital & Innovation</option>
+            </select>
+          </label>
+          <label class="full"><span data-i18n="lbl_message">Project or Organization Details</span><textarea name="message" rows="3" required></textarea></label>
+        </div>
+        <button class="btn btn-primary" type="submit" data-i18n="btn_send_inquiry">Send inquiry ↗</button>
+      </form>
+    </section>
+  </main>
 
-  <!-- Testimonial Banner Section -->
-  <section class="section testimonials-strip" id="testimonials-section">
-    <div class="section-head">
-      <div>
-        <div class="section-label" data-i18n="testi_eyebrow">SUCCESS STORIES</div>
-        <h2 data-i18n="testi_title">Client & Partner <em>Testimonials</em></h2>
-      </div>
-      <button class="btn btn-outline btn-small" id="addTestimonialBtn" type="button" data-i18n="btn_add_testimonial">+ Add Testimonial</button>
+  <footer>
+    <div class="footer-main">
+      <a class="brand" href="index.html"><span class="brand-icon">T</span><span><b>TATARI</b><small>CONSULTING</small></span></a>
+      <p data-i18n="footer_sub">CONSULTING · INDEED-STYLE JOB BOARD · UPWORK-STYLE FREELANCE MARKETPLACE</p>
     </div>
-    <div class="testimonial-banner-grid" id="testimonialBannerList">
-      <div class="empty-note" data-i18n="loading_testimonials">Loading client & partner testimonials...</div>
-    </div>
-  </section>
+    <small class="copyright">© <span id="year"></span> <span data-i18n="footer_rights">TATARI Consulting, Addis Ababa, Ethiopia. All rights reserved.</span></small>
+  </footer>
 
-  <!-- Contact Section -->
-  <section class="section contact" id="contact">
-    <div>
-      <div class="section-label" data-i18n="contact_eyebrow">LET'S WORK TOGETHER</div>
-      <h2 data-i18n="contact_title">What can we help<br/><em>you achieve?</em></h2>
-      <p data-i18n="contact_desc">Contact our strategic consulting and talent acquisition team in Addis Ababa.</p>
-    </div>
-    <form class="form-card" id="inquiryForm">
-      <h3 data-i18n="form_inquiry_title">Send an inquiry</h3>
-      <div class="form-grid">
-        <label><span data-i18n="lbl_your_name">Your name</span><input minlength="2" name="name" required=""/></label>
-        <label><span data-i18n="lbl_email">Email address</span><input name="email" required="" type="email"/></label>
-        <label><span data-i18n="lbl_phone">Phone (optional)</span><input name="phone"/></label>
-        <label><span data-i18n="lbl_interest">I'm interested in</span>
-          <select name="service">
-            <option data-i18n="opt_srv1">Employer Subscriptions</option>
-            <option data-i18n="opt_srv2">Talent Recruitment</option>
-            <option data-i18n="opt_srv3">Freelance Contracting</option>
-            <option data-i18n="opt_srv4">Consulting & Analytics</option>
-          </select>
-        </label>
-        <label class="full"><span data-i18n="lbl_message">How can we help?</span><textarea name="message" required="" rows="4"></textarea></label>
-      </div>
-      <button class="btn btn-primary" type="submit" data-i18n="btn_send_inquiry">Send inquiry ↗</button>
-      <p class="form-feedback" id="inquiryFeedback" role="status"></p>
-    </form>
-  </section>
-</main>
+  <div id="modalRoot"></div>
+  <div id="toast" role="status"></div>
 
-<footer>
-  <div class="footer-main">
-    <a class="brand" href="#home"><span class="brand-icon">T</span><span><b>TATARI</b><small>CONSULTING</small></span></a>
-    <p data-i18n="footer_sub">CAREERS · SEARCH ENGINE · FREELANCE · EXPORT DATA</p>
-  </div>
-  <small class="copyright"><span data-i18n="footer_copy">©</span> <span id="year"></span> <span data-i18n="footer_rights">TATARI Consulting. All rights reserved.</span></small>
-</footer>
-
-<div id="modalRoot"></div>
-<div id="toast" role="status"></div>
-
-<script src="supabase-config.js"></script>
-<script src="i18n.js"></script>
-<script src="app.js"></script>
+  <script src="supabase-config.js"></script>
+  <script src="i18n.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
