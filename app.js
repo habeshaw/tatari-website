@@ -5,6 +5,7 @@
   let supabaseClient = null;
   let currentSession = null;
   let currentUserRole = localStorage.getItem('tatari_demo_role') || 'seeker';
+  let currentUserSub = localStorage.getItem('tatari_sub_tier') || 'Free Tier';
   let currentLang = localStorage.getItem('tatari_lang') || 'en';
   let freelanceSubView = 'projects';
 
@@ -82,9 +83,9 @@
     }
   ];
 
-  let userApplications = JSON.parse(localStorage.getItem('tatari_apps_v5') || '[]');
-  let userProposals = JSON.parse(localStorage.getItem('tatari_bids_v5') || '[]');
-  let telebirrTransactions = JSON.parse(localStorage.getItem('tatari_telebirr_v5') || '[]');
+  let userApplications = JSON.parse(localStorage.getItem('tatari_apps_v6') || '[]');
+  let userProposals = JSON.parse(localStorage.getItem('tatari_bids_v6') || '[]');
+  let telebirrTransactions = JSON.parse(localStorage.getItem('tatari_telebirr_v6') || '[]');
 
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const formatETB = n => `ETB ${Number(n || 0).toLocaleString('en-US')}`;
@@ -331,12 +332,22 @@
 
     if (currentUserRole === 'employer') {
       container.innerHTML = `
+        <div class="form-card" style="margin-bottom:24px; background:linear-gradient(135deg,#10243b,#183752); color:white;">
+          <span class="eyebrow" style="color:var(--teal);">EMPLOYER SUBSCRIPTION STATUS</span>
+          <h2 style="color:white; margin:8px 0;">Active Plan: <b>${esc(currentUserSub)}</b></h2>
+          <p style="color:#c7d2de; font-size:13px;">Manage your subscription tier to unlock unlimited job posts and priority applicant matching in Addis Ababa.</p>
+          <div style="display:flex; gap:12px; margin-top:16px; flex-wrap:wrap;">
+            <button class="btn btn-primary btn-small" data-sub-tier="Pro Employer Plan (2,500 ETB/mo)" type="button">Upgrade to Pro Employer (2,500 ETB via Telebirr)</button>
+            <button class="btn btn-ghost btn-small" data-sub-tier="Enterprise Plan (7,500 ETB/mo)" type="button">Upgrade to Enterprise (7,500 ETB via Telebirr)</button>
+          </div>
+        </div>
+
         <div style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
           <button class="btn btn-primary btn-small" id="dashPostJobBtn" type="button">+ Post New Job Vacancy (Telebirr Fee)</button>
           <button class="btn btn-outline btn-small" id="dashPostProjectBtn" type="button">+ Post Freelance Project (Telebirr Escrow)</button>
         </div>
 
-        <h3>1. My Job Postings & Admin Approval Status (Indeed Mode)</h3>
+        <h3>1. My Registered Job Postings & Admin Approval Status</h3>
         <div class="table-container" style="background:#fff; padding:16px; border-radius:14px; border:1px solid var(--line); margin-bottom:30px;">
           <table class="admin-table">
             <thead><tr><th>Job Title</th><th>Company</th><th>Telebirr Payment</th><th>Admin Status</th><th>Action</th></tr></thead>
@@ -379,7 +390,7 @@
           </table>
         </div>
 
-        <h3>3. Freelance Contracts & Telebirr Escrow (Upwork Mode)</h3>
+        <h3>3. Freelance Contracts & Telebirr Escrow</h3>
         <div class="table-container" style="background:#fff; padding:16px; border-radius:14px; border:1px solid var(--line);">
           <table class="admin-table">
             <thead><tr><th>Project</th><th>Bid Amount</th><th>Telebirr Escrow</th><th>Contract Action</th></tr></thead>
@@ -520,7 +531,7 @@
   }
 
   function openTelebirrPaymentModal(type, title, callback) {
-    const fee = type === 'job' ? 500 : 1200;
+    const fee = type === 'job' ? 500 : (type === 'sub' ? 2500 : 1200);
     modal(`
       <div class="section-label">TELEBIRR PAYMENT GATEWAY</div>
       <h2>Secure Checkout: ${esc(title)}</h2>
@@ -540,7 +551,7 @@
         ev.preventDefault();
         const txnId = 'TB-' + Math.floor(100000 + Math.random() * 900000);
         telebirrTransactions.push({ txnId, type, fee, time: new Date().toISOString() });
-        localStorage.setItem('tatari_telebirr_v5', JSON.stringify(telebirrTransactions));
+        localStorage.setItem('tatari_telebirr_v6', JSON.stringify(telebirrTransactions));
         toast(`Telebirr payment successful! Transaction ID: ${txnId}`);
         closeModal();
         if (callback) callback(txnId);
@@ -629,15 +640,17 @@
 
   function openAuthModal(mode = 'signin') {
     modal(`
-      <div class="section-label">TATARI STRICT USER MANAGEMENT & ROLE PRIVILEGE</div>
-      <h2>${mode === 'signup' ? 'Create Your Account' : 'Sign In to TATARI'}</h2>
+      <div class="section-label">TATARI STRICT EMPLOYER & USER MANAGEMENT</div>
+      <h2>${mode === 'signup' ? 'Create Employer or Seeker Account' : 'Sign In to TATARI'}</h2>
       <form id="authForm" class="stack-form" data-mode="${mode}">
         ${mode === 'signup' ? `
           <label>Full Name<input name="full_name" required/></label>
+          <label>Company Name (Required for Employers)<input name="company_name" placeholder="e.g. Addis Tech PLC"/></label>
+          <label>Business TIN Number<input name="tin_number" placeholder="e.g. 0012345678"/></label>
           <label>Select Strict Role Privilege
             <select name="role">
+              <option value="employer">Employer / Company (Post Jobs & Subscriptions)</option>
               <option value="seeker">Job Seeker / Freelancer</option>
-              <option value="employer">Employer / Client</option>
               <option value="admin">Admin (TATARI Moderation)</option>
             </select>
           </label>
@@ -648,7 +661,7 @@
       </form>
       <div style="margin-top:14px; font-size:12px;">
         ${mode === 'signin'
-          ? '<button type="button" id="switchSignup" class="btn btn-outline btn-small">New here? Register Account</button>'
+          ? '<button type="button" id="switchSignup" class="btn btn-outline btn-small">New employer? Register Account</button>'
           : '<button type="button" id="switchSignin" class="btn btn-outline btn-small">Already registered? Sign In</button>'}
       </div>
     `);
@@ -682,7 +695,7 @@
         status: 'Applied'
       };
       userApplications.unshift(appRecord);
-      localStorage.setItem('tatari_apps_v5', JSON.stringify(userApplications));
+      localStorage.setItem('tatari_apps_v6', JSON.stringify(userApplications));
       toast('Application submitted successfully! Track status in your Dashboard.');
       closeModal();
       return;
@@ -701,7 +714,7 @@
         status: 'submitted'
       };
       userProposals.unshift(bidRecord);
-      localStorage.setItem('tatari_bids_v5', JSON.stringify(userProposals));
+      localStorage.setItem('tatari_bids_v6', JSON.stringify(userProposals));
       toast('Proposal submitted & Telebirr escrow secured! Client can now review.');
       closeModal();
       return;
@@ -753,11 +766,10 @@
     }
 
     if (form.id === 'authForm') {
-      const email = fd.get('email');
-      const role = fd.get('role') || 'seeker';
+      const role = fd.get('role') || 'employer';
       currentUserRole = role;
       localStorage.setItem('tatari_demo_role', role);
-      toast(`Successfully authenticated with strict role privilege: ${role.toUpperCase()}!`);
+      toast(`Successfully authenticated as ${role.toUpperCase()} with company TIN verification!`);
       closeModal();
       refreshAuthUI();
       renderCurrentPage();
@@ -793,16 +805,27 @@
     }
     if (t.id === 'closeModal' || t.id === 'backdrop') { closeModal(); return; }
 
+    if (t.dataset.subTier) {
+      const tier = t.dataset.subTier;
+      openTelebirrPaymentModal('sub', tier, (txnId) => {
+        currentUserSub = tier;
+        localStorage.setItem('tatari_sub_tier', tier);
+        toast(`Subscription upgraded to ${tier}! Transaction: ${txnId}`);
+        renderDashboard();
+      });
+      return;
+    }
+
     if (t.id === 'postQuickBtn' || t.id === 'openPostJobModalBtn' || t.id === 'dashPostJobBtn') {
       if (currentUserRole !== 'employer' && currentUserRole !== 'admin') {
-        toast('Access restricted: Only verified Employers can post jobs.', true);
+        toast('Access restricted: Only registered Employers can post jobs.', true);
         return;
       }
       openPostJobModal(); return;
     }
     if (t.id === 'openPostProjectModalBtn' || t.id === 'dashPostProjectBtn') {
       if (currentUserRole !== 'employer' && currentUserRole !== 'admin') {
-        toast('Access restricted: Only verified Clients can post projects.', true);
+        toast('Access restricted: Only registered Clients can post projects.', true);
         return;
       }
       openPostProjectModal(); return;
@@ -855,7 +878,7 @@
     if (t.dataset.acceptBid !== undefined) {
       const idx = Number(t.dataset.acceptBid);
       userProposals[idx].status = 'active_contract';
-      localStorage.setItem('tatari_bids_v5', JSON.stringify(userProposals));
+      localStorage.setItem('tatari_bids_v6', JSON.stringify(userProposals));
       toast('Bid accepted! Telebirr escrow locked for contract execution.');
       renderDashboard();
       return;
@@ -864,7 +887,7 @@
     if (t.dataset.completeMilestone !== undefined) {
       const idx = Number(t.dataset.completeMilestone);
       userProposals[idx].status = 'completed';
-      localStorage.setItem('tatari_bids_v5', JSON.stringify(userProposals));
+      localStorage.setItem('tatari_bids_v6', JSON.stringify(userProposals));
       toast('Milestone completed! Telebirr escrow released to freelancer.');
       renderDashboard();
       return;
