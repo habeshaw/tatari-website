@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <meta name="theme-color" content="#10243b"/>
-  <title data-i18n="page_title">TATARI — Consulting, Ethiopian Job Board & Freelance Marketplace</title>
+  <title data-i18n="page_title">TATARI — Consulting, Ethiopian Job Board, Freelance & Digital Store</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Ethiopic:wght@400;500;700&display=swap" rel="stylesheet"/>
@@ -20,9 +20,10 @@
     <button class="mobile-menu" id="mobileMenu" type="button" aria-label="Menu">☰</button>
     <nav id="nav">
       <a href="index.html" class="active-link" data-i18n="nav_home">Home</a>
-      <a href="#consulting" data-i18n="nav_consulting">Consulting Services</a>
+      <a href="#consulting" data-i18n="nav_consulting">Consulting</a>
       <a href="jobs.html" data-i18n="nav_jobs">Find Jobs</a>
-      <a href="freelance.html" data-i18n="nav_freelance">Freelance Marketplace</a>
+      <a href="freelance.html" data-i18n="nav_freelance">Freelance</a>
+      <a href="products.html" data-i18n="nav_store">Store</a>
       <a href="dashboard.html" id="navDashboardLink" data-i18n="nav_dashboard">Dashboard</a>
     </nav>
     <div class="head-actions">
@@ -41,20 +42,21 @@
       <div class="hero-copy">
         <span class="eyebrow" data-i18n="hero_eyebrow">ETHIOPIA'S ALL-IN-ONE TALENT, FREELANCE & CONSULTING HUB</span>
         <h1 data-i18n="hero_title">People. Data. Technology.<br/><em>Growth.</em></h1>
-        <p class="hero-sub" data-i18n="hero_desc">Hire vetted Ethiopian professionals, bid on freelance projects, find full-time careers, or automate your business with TATARI Consulting.</p>
+        <p class="hero-sub" data-i18n="hero_desc">Hire vetted Ethiopian professionals, bid on freelance projects, find full-time careers, purchase automated business templates, or partner with TATARI Consulting.</p>
 
         <form class="hero-search-bar" id="heroSearchForm">
           <select id="heroSearchMode" aria-label="Search Mode">
-            <option value="jobs" data-i18n="mode_jobs">🏢 Jobs (Indeed Mode)</option>
-            <option value="freelance" data-i18n="mode_freelance">💼 Freelance Gigs (Upwork Mode)</option>
+            <option value="jobs" data-i18n="mode_jobs">🏢 Full-Time & Part-Time Jobs</option>
+            <option value="freelance" data-i18n="mode_freelance">💼 Freelance Projects & Talent</option>
+            <option value="store" data-i18n="mode_store">📦 Digital Templates & Store</option>
             <option value="consulting" data-i18n="mode_consulting">📊 Consulting Solutions</option>
           </select>
-          <input type="text" id="heroSearchInput" data-i18n-placeholder="ph_hero_search" placeholder="Search job titles, Power Query, HR, Python, Addis Ababa..."/>
+          <input type="text" id="heroSearchInput" data-i18n-placeholder="ph_hero_search" placeholder="Search jobs, Power Query templates, HR, Python, Addis Ababa..."/>
           <button type="submit" class="btn btn-primary" data-i18n="btn_search">Search ↗</button>
         </form>
 
         <div class="hero-proof">
-          <span>✦</span> <span data-i18n="hero_proof_text">Addis Ababa & Sheger City · Bilingual (EN/አማ) · ETB Budgeting & Live Tracking</span>
+          <span>✦</span> <span data-i18n="hero_proof_text">Addis Ababa & Sheger City · Bilingual (EN/አማ) · Telebirr Escrow & Verified Roles</span>
         </div>
       </div>
 
@@ -111,16 +113,16 @@
       <div class="section-head">
         <div>
           <div class="section-label" data-i18n="live_eyebrow">LIVE MARKETPLACE FEED</div>
-          <h2 data-i18n="live_title">Latest <em>Jobs & Freelance Projects</em></h2>
+          <h2 data-i18n="live_title">Latest <em>Jobs, Projects & Store Tools</em></h2>
         </div>
         <div class="head-btn-group">
           <a href="jobs.html" class="btn btn-outline btn-small" data-i18n="btn_all_jobs">View All Jobs →</a>
-          <a href="freelance.html" class="btn btn-primary btn-small" data-i18n="btn_all_gigs">Browse Freelance Gigs →</a>
+          <a href="freelance.html" class="btn btn-primary btn-small" data-i18n="btn_all_gigs">Browse Freelance →</a>
         </div>
       </div>
 
       <div class="catalog-grid" id="homeLivePreviewGrid">
-        <div class="empty" data-i18n="loading_opportunities">Loading live jobs and freelance projects...</div>
+        <div class="empty" data-i18n="loading_opportunities">Loading live marketplace records...</div>
       </div>
     </section>
 
@@ -154,7 +156,7 @@
   <footer>
     <div class="footer-main">
       <a class="brand" href="index.html"><span class="brand-icon">T</span><span><b>TATARI</b><small>CONSULTING</small></span></a>
-      <p data-i18n="footer_sub">CONSULTING · INDEED-STYLE JOB BOARD · UPWORK-STYLE FREELANCE MARKETPLACE</p>
+      <p data-i18n="footer_sub">CONSULTING · CAREER PORTAL · FREELANCE MARKETPLACE · DIGITAL STORE</p>
     </div>
     <small class="copyright">© <span id="year"></span> <span data-i18n="footer_rights">TATARI Consulting, Addis Ababa, Ethiopia. All rights reserved.</span></small>
   </footer>
