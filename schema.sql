@@ -1,8 +1,7 @@
 -- ============================================================================
--- TATARI BILINGUAL PLATFORM — COMPLETE PRODUCTION DATABASE SCHEMA (POSTGRESQL)
+-- TATARI BILINGUAL PLATFORM — PRODUCTION DATABASE SCHEMA (POSTGRESQL)
 -- ============================================================================
 
--- 1. Profiles Table
 CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email TEXT UNIQUE NOT NULL,
@@ -19,7 +18,6 @@ INSERT INTO public.profiles (email, full_name, role, status, subscription_tier)
 VALUES ('admin@tatari.et', 'TATARI System Administrator', 'admin', 'approved', 'Enterprise')
 ON CONFLICT (email) DO UPDATE SET role = 'admin', status = 'approved';
 
--- 2. Career Job Vacancies Table (ID is UUID)
 CREATE TABLE IF NOT EXISTS public.career_jobs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     employer_email TEXT,
@@ -40,7 +38,6 @@ CREATE TABLE IF NOT EXISTS public.career_jobs (
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 3. Job Applications Pipeline Table (job_id is UUID to match career_jobs.id)
 CREATE TABLE IF NOT EXISTS public.job_applications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     job_id UUID REFERENCES public.career_jobs(id) ON DELETE CASCADE,
@@ -52,7 +49,6 @@ CREATE TABLE IF NOT EXISTS public.job_applications (
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 4. Freelance Projects Table (ID is UUID)
 CREATE TABLE IF NOT EXISTS public.jobs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     client_email TEXT,
@@ -70,7 +66,6 @@ CREATE TABLE IF NOT EXISTS public.jobs (
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 5. Freelance Bids & Proposals Table (job_id is UUID to match jobs.id)
 CREATE TABLE IF NOT EXISTS public.freelance_proposals (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     job_id UUID REFERENCES public.jobs(id) ON DELETE CASCADE,
@@ -83,7 +78,6 @@ CREATE TABLE IF NOT EXISTS public.freelance_proposals (
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 6. Digital Store Products Table (ID is UUID)
 CREATE TABLE IF NOT EXISTS public.products (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     seller_email TEXT,
@@ -99,7 +93,6 @@ CREATE TABLE IF NOT EXISTS public.products (
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 7. Digital Product Orders Table (product_id is UUID to match products.id)
 CREATE TABLE IF NOT EXISTS public.product_orders (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     product_id UUID REFERENCES public.products(id) ON DELETE SET NULL,
@@ -109,7 +102,6 @@ CREATE TABLE IF NOT EXISTS public.product_orders (
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 8. Telebirr Transactions & Escrow Ledger
 CREATE TABLE IF NOT EXISTS public.telebirr_transactions (
     txn_id TEXT PRIMARY KEY,
     user_email TEXT NOT NULL,
@@ -119,7 +111,6 @@ CREATE TABLE IF NOT EXISTS public.telebirr_transactions (
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 9. System Activity & Audit Logs Table
 CREATE TABLE IF NOT EXISTS public.activity_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_email TEXT NOT NULL,
@@ -127,10 +118,6 @@ CREATE TABLE IF NOT EXISTS public.activity_logs (
     details TEXT NOT NULL,
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
-
--- ============================================================================
--- ROW LEVEL SECURITY (RLS) & POLICIES
--- ============================================================================
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.career_jobs ENABLE ROW LEVEL SECURITY;
@@ -142,7 +129,6 @@ ALTER TABLE public.product_orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.telebirr_transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.activity_logs ENABLE ROW LEVEL SECURITY;
 
--- Drop existing policies if re-running
 DROP POLICY IF EXISTS "Public read approved jobs" ON public.career_jobs;
 DROP POLICY IF EXISTS "Public insert jobs" ON public.career_jobs;
 DROP POLICY IF EXISTS "Public update jobs" ON public.career_jobs;
@@ -161,7 +147,6 @@ DROP POLICY IF EXISTS "Public update profiles" ON public.profiles;
 
 DROP POLICY IF EXISTS "Public all logs" ON public.activity_logs;
 
--- Create Policies Cleanly
 CREATE POLICY "Public read approved jobs" ON public.career_jobs FOR SELECT USING (true);
 CREATE POLICY "Public insert jobs" ON public.career_jobs FOR INSERT WITH CHECK (true);
 CREATE POLICY "Public update jobs" ON public.career_jobs FOR UPDATE USING (true);
