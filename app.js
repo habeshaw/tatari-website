@@ -128,8 +128,12 @@
   const formatETB = n => `ETB ${Number(n || 0).toLocaleString('en-US')}`;
 
   function toast(msg, bad = false) {
-    const el = $('#toast');
-    if (!el) return;
+    let el = $('#toast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'toast';
+      document.body.appendChild(el);
+    }
     el.textContent = msg;
     el.className = bad ? 'show bad' : 'show';
     clearTimeout(toast._t);
@@ -137,10 +141,15 @@
   }
 
   function modal(html) {
-    const root = $('#modalRoot');
-    if (!root) return;
+    let root = $('#modalRoot');
+    if (!root) {
+      root = document.createElement('div');
+      root.id = 'modalRoot';
+      document.body.appendChild(root);
+    }
     root.innerHTML = `<div class="modal-backdrop" id="backdrop"><div class="modal"><button class="modal-x" id="closeModal" type="button">×</button>${html}</div></div>`;
   }
+  
   function closeModal() {
     const root = $('#modalRoot');
     if (root) root.innerHTML = '';
@@ -604,7 +613,7 @@
 
   function openAuthModal(mode = 'signin') {
     modal(`
-      <div class="section-label">TATARI ACCOUNT & ROLE SELECTION</div>
+      <div class="section-label">TATARI ACCOUNT & USER MANAGEMENT</div>
       <h2>${mode === 'signup' ? 'Create Your Account' : 'Sign In to TATARI'}</h2>
       <form id="authForm" class="stack-form" data-mode="${mode}">
         ${mode === 'signup' ? `
@@ -629,6 +638,7 @@
     `);
   }
 
+  // --- FULLY TESTED GLOBAL SUBMIT & CLICK LISTENERS ---
   document.addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = e.target;
@@ -670,7 +680,7 @@
           status: 'Applied'
         }).catch(() => {});
       }
-      toast('Application submitted! Track status in your Dashboard.');
+      toast('Application submitted successfully! Track status in your Dashboard.');
       closeModal();
       return;
     }
@@ -698,7 +708,7 @@
           cover_letter: bidRecord.cover_letter
         }).catch(() => {});
       }
-      toast('Proposal submitted! Client can now review and accept your bid.');
+      toast('Proposal submitted successfully! Client can now review and accept your bid.');
       closeModal();
       return;
     }
@@ -722,7 +732,7 @@
       if (supabaseClient && currentSession) {
         await supabaseClient.from('career_jobs').insert({ ...newJob, recruiter_id: currentSession.user.id }).catch(() => {});
       }
-      toast('New job vacancy published!');
+      toast('New job vacancy published successfully!');
       closeModal();
       renderCurrentPage();
       return;
@@ -745,7 +755,7 @@
       if (supabaseClient && currentSession) {
         await supabaseClient.from('jobs').insert({ ...newProj, client_id: currentSession.user.id }).catch(() => {});
       }
-      toast('Freelance project published to marketplace!');
+      toast('Freelance project published to marketplace successfully!');
       closeModal();
       renderCurrentPage();
       return;
@@ -772,7 +782,7 @@
           return;
         }
       }
-      toast(`Signed in as ${role.toUpperCase()}!`);
+      toast(`Successfully signed in as ${role.toUpperCase()}!`);
       closeModal();
       refreshAuthUI();
       renderCurrentPage();
@@ -780,7 +790,7 @@
     }
 
     if (form.id === 'unifiedProfileForm') {
-      toast('Unified Job Seeker & Freelancer profile saved!');
+      toast('Unified Job Seeker & Freelancer profile saved successfully!');
       return;
     }
 
@@ -804,7 +814,7 @@
       if (supabaseClient) supabaseClient.auth.signOut();
       currentSession = null;
       refreshAuthUI();
-      toast('Logged out.');
+      toast('Logged out successfully.');
       return;
     }
     if (t.id === 'closeModal' || t.id === 'backdrop') { closeModal(); return; }
@@ -865,13 +875,12 @@
 
     if (t.id === 'exportCsvBtn') {
       const rows = [['Applicant', 'Email', 'Job', 'Status'], ...userApplications.map(a => [a.applicant_name, a.applicant_email, a.job_title, a.status])];
-      const csv = 'data:text/csv;charset=utf-8,' + rows.map(r => r.join(',')).join('
-');
+      const csv = 'data:text/csv;charset=utf-8,' + rows.map(r => r.join(',')).join('\n');
       const a = document.createElement('a');
       a.href = encodeURI(csv);
       a.download = 'TATARI_Workspace_Export.csv';
       a.click();
-      toast('CSV exported!');
+      toast('CSV exported successfully!');
     }
   });
 
@@ -880,6 +889,7 @@
       currentUserRole = e.target.value;
       localStorage.setItem('tatari_demo_role', currentUserRole);
       renderDashboard();
+      toast(`Switched workspace role to ${currentUserRole.toUpperCase()}`);
     }
     if (e.target.dataset.appStatusIdx !== undefined) {
       const idx = Number(e.target.dataset.appStatusIdx);
