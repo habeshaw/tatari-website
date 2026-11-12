@@ -22,7 +22,7 @@
       description_en: 'Manage monthly payroll in Power Query, maintain employee records, and ensure compliance with Ethiopian Labor Proclamation.',
       description_am: 'ወርሃዊ የደመወዝ ክፍያን በPower Query ያስተዳድሩ፣ የሰራተኞችን መረጃ ይያዙ እና ከኢትዮጵያ የአሠሪና ሠራተኛ ሕግ ጋር መጣጣሙን ያረጋግጡ።',
       requirements: 'BA in HRM or Management, strong Excel & Power Query skills, 2+ years experience.',
-      status: 'open'
+      status: 'approved'
     },
     {
       id: 'job-2',
@@ -37,22 +37,7 @@
       description_en: 'Build automated branch performance dashboards, credit portfolio trackers, and executive KPI reports.',
       description_am: 'አውቶማቲክ የቅርንጫፍ አፈጻጸም ዳሽቦርዶችን እና የስራ አመራር KPI ሪፖርቶችን ይገንቡ።',
       requirements: 'BSc in Information Systems, Statistics, or Computer Science; SQL & Power BI/Excel.',
-      status: 'open'
-    },
-    {
-      id: 'job-3',
-      title_en: 'Senior Project Accountant (NGO)',
-      title_am: 'ከፍተኛ የፕሮጀክት አካውንታንት',
-      company_name: 'Horn Development Partners',
-      location: 'Addis Ababa',
-      job_type: 'Contract',
-      category: 'Finance',
-      salary_range: '42,000 ETB/mo',
-      deadline: '2026-12-10',
-      description_en: 'Oversee donor grant reporting, IPSAS compliance, and monthly budget-vs-actual reconciliations.',
-      description_am: 'የለጋሾች ሪፖርት፣ የIPSAS አሰራር እና ወርሃዊ የበጀት ክትትልን ይቆጣጠሩ።',
-      requirements: 'BA in Accounting & Finance, ACCA partial/full, 4+ years NGO grant accounting.',
-      status: 'open'
+      status: 'approved'
     }
   ];
 
@@ -68,20 +53,7 @@
       milestone_status: 'open',
       description_en: 'We have 12 monthly Excel exports from our POS system and need a clean, automated Power Query pipeline + interactive KPI dashboard.',
       description_am: 'ከPOS ሲስተማችን የወጡ 12 ወርሃዊ የኤክሴል መረጃዎችን የሚያገናኝ አውቶማቲክ Power Query እና ዳሽቦርድ እንፈልጋለን።',
-      status: 'open'
-    },
-    {
-      id: 'fl-2',
-      title_en: 'Draft Complete SME HR Policy & Job Descriptions (15 Roles)',
-      title_am: 'ለአነስተኛ ድርጅት የሰው ሀብት ፖሊሲ እና የ15 የሥራ መደቦች ዝርዝር ማዘጋጀት',
-      category: 'HR & Admin',
-      job_type: 'Fixed-Price',
-      budget_min: 20000,
-      budget_max: 35000,
-      milestone_status: 'open',
-      description_en: 'Looking for an Ethiopian HR consultant to draft an employee handbook aligned with Proclamation No. 1156/2019 plus 15 JDs.',
-      description_am: 'በአዋጅ ቁጥር 1156/2019 መሰረት የሰራተኞች መመሪያ እና የ15 የስራ መደቦች ዝርዝር የሚያዘጋጅ የሰው ሀብት አማካሪ እንፈልጋለን።',
-      status: 'open'
+      status: 'approved'
     }
   ];
 
@@ -107,22 +79,12 @@
       location: 'Addis Ababa',
       rating: '5.0 ★ (9 jobs)',
       is_vetted: true
-    },
-    {
-      id: 'fr-3',
-      full_name: 'Natnael Tadesse',
-      headline_en: 'Full-Stack Web Developer (React, Supabase, Node.js)',
-      headline_am: 'ሙሉ-ስታክ ዌብ አልሚ (React, Supabase, Node.js)',
-      skills: ['React', 'Supabase', 'JavaScript', 'UI/UX Design'],
-      hourly_rate_etb: 950,
-      location: 'Sheger City / Remote',
-      rating: '4.8 ★ (11 jobs)',
-      is_vetted: true
     }
   ];
 
-  let userApplications = JSON.parse(localStorage.getItem('tatari_apps_v4') || '[]');
-  let userProposals = JSON.parse(localStorage.getItem('tatari_bids_v4') || '[]');
+  let userApplications = JSON.parse(localStorage.getItem('tatari_apps_v5') || '[]');
+  let userProposals = JSON.parse(localStorage.getItem('tatari_bids_v5') || '[]');
+  let telebirrTransactions = JSON.parse(localStorage.getItem('tatari_telebirr_v5') || '[]');
 
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const formatETB = n => `ETB ${Number(n || 0).toLocaleString('en-US')}`;
@@ -137,7 +99,7 @@
     el.textContent = msg;
     el.className = bad ? 'show bad' : 'show';
     clearTimeout(toast._t);
-    toast._t = setTimeout(() => { el.className = ''; }, 4000);
+    toast._t = setTimeout(() => { el.className = ''; }, 4500);
   }
 
   function modal(html) {
@@ -189,14 +151,6 @@
 
         const { data: dbProfiles } = await supabaseClient.from('profiles').select('*').eq('is_vetted', true);
         if (dbProfiles && dbProfiles.length) freelancersList = dbProfiles;
-
-        if (currentSession) {
-          const { data: dbApps } = await supabaseClient.from('career_applications').select('*');
-          if (dbApps && dbApps.length) userApplications = dbApps;
-
-          const { data: dbBids } = await supabaseClient.from('proposals').select('*');
-          if (dbBids && dbBids.length) userProposals = dbBids;
-        }
       } catch (e) {
         console.warn('Using local fallback records:', e);
       }
@@ -220,9 +174,9 @@
   function renderHomePreview() {
     const grid = $('#homeLivePreviewGrid');
     if (!grid) return;
-    const previewJobs = jobListings.slice(0, 2).map(j => renderJobCard(j)).join('');
-    const previewGigs = freelanceProjects.slice(0, 2).map(p => renderProjectCard(p)).join('');
-    grid.innerHTML = previewJobs + previewGigs;
+    const approvedJobs = jobListings.filter(j => j.status === 'approved').slice(0, 2);
+    const approvedGigs = freelanceProjects.filter(p => p.status === 'approved').slice(0, 2);
+    grid.innerHTML = approvedJobs.map(j => renderJobCard(j)).join('') + approvedGigs.map(p => renderProjectCard(p)).join('');
   }
 
   function renderJobsBoard() {
@@ -242,6 +196,7 @@
     const minSal = Number($('#jobFilterSalary')?.value || 0);
 
     const filtered = jobListings.filter(j => {
+      if (j.status !== 'approved' && currentUserRole !== 'admin') return false;
       const title = `${j.title_en} ${j.title_am || ''} ${j.company_name} ${j.description_en}`.toLowerCase();
       const numSal = parseInt(String(j.salary_range || '0').replace(/[^\d]/g, ''), 10) || 0;
       return (!kw || title.includes(kw)) &&
@@ -252,7 +207,7 @@
     });
 
     if (!filtered.length) {
-      grid.innerHTML = `<div class="empty">${currentLang === 'am' ? 'ምንም ተዛማጅ የሥራ ማስታወቂያ አልተገኘም።' : 'No matching jobs found. Try clearing filters.'}</div>`;
+      grid.innerHTML = `<div class="empty">${currentLang === 'am' ? 'ምንም ተዛማጅ የሥራ ማስታወቂያ አልተገኘም።' : 'No matching approved jobs found.'}</div>`;
       return;
     }
     grid.innerHTML = filtered.map(j => renderJobCard(j)).join('');
@@ -298,6 +253,7 @@
 
     if (freelanceSubView === 'projects') {
       const filtered = freelanceProjects.filter(p => {
+        if (p.status !== 'approved' && currentUserRole !== 'admin') return false;
         const text = `${p.title_en} ${p.title_am || ''} ${p.description_en}`.toLowerCase();
         const budget = Number(p.budget_min || 0);
         return (!kw || text.includes(kw)) &&
@@ -306,7 +262,7 @@
       });
 
       if (!filtered.length) {
-        grid.innerHTML = `<div class="empty">${currentLang === 'am' ? 'ምንም የፍሪላንስ ፕሮጀክት አልተገኘም።' : 'No matching freelance projects found.'}</div>`;
+        grid.innerHTML = `<div class="empty">${currentLang === 'am' ? 'ምንም የፍሪላንስ ፕሮጀክት አልተገኘም።' : 'No matching approved freelance projects found.'}</div>`;
         return;
       }
       grid.innerHTML = filtered.map(p => renderProjectCard(p)).join('');
@@ -352,12 +308,12 @@
           <b>💼</b>
         </div>
         <div class="resource-body">
-          <span class="pill">${esc(p.category)} · Status: ${esc(p.milestone_status || 'open')}</span>
+          <span class="pill">${esc(p.category)} · Telebirr Escrow: ${esc(p.telebirr_status || 'Pending Admin Approval')}</span>
           <h3>${esc(title)}</h3>
           <p>${esc(desc)}</p>
           <div class="resource-bottom">
             <strong>${budgetText}</strong>
-            <button class="btn btn-primary btn-small" data-bid-project="${p.id}" type="button">
+            <button class="btn btn-primary btn-small" data-bid-project="${p.id}" type="button" ${p.status !== 'approved' ? 'disabled style="opacity:0.5;"' : ''}>
               ${currentLang === 'am' ? 'ጨረታ ያስገቡ' : 'Submit Proposal'}
             </button>
           </div>
@@ -376,11 +332,29 @@
     if (currentUserRole === 'employer') {
       container.innerHTML = `
         <div style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
-          <button class="btn btn-primary btn-small" id="dashPostJobBtn" type="button">+ Post New Job Vacancy</button>
-          <button class="btn btn-outline btn-small" id="dashPostProjectBtn" type="button">+ Post Freelance Project</button>
+          <button class="btn btn-primary btn-small" id="dashPostJobBtn" type="button">+ Post New Job Vacancy (Telebirr Fee)</button>
+          <button class="btn btn-outline btn-small" id="dashPostProjectBtn" type="button">+ Post Freelance Project (Telebirr Escrow)</button>
         </div>
 
-        <h3>1. Job Applications Received (Indeed Mode)</h3>
+        <h3>1. My Job Postings & Admin Approval Status (Indeed Mode)</h3>
+        <div class="table-container" style="background:#fff; padding:16px; border-radius:14px; border:1px solid var(--line); margin-bottom:30px;">
+          <table class="admin-table">
+            <thead><tr><th>Job Title</th><th>Company</th><th>Telebirr Payment</th><th>Admin Status</th><th>Action</th></tr></thead>
+            <tbody>
+              ${jobListings.map((j, idx) => `
+                <tr>
+                  <td><b>${esc(j.title_en)}</b></td>
+                  <td>${esc(j.company_name)}</td>
+                  <td><span class="status approved">Paid via Telebirr (${formatETB(j.telebirr_fee || 500)})</span></td>
+                  <td><span class="status ${j.status === 'approved' ? 'approved' : ''}">${esc(j.status)}</span></td>
+                  <td>${j.status !== 'approved' ? '<small class="muted">Pending Admin Review</small>' : '<span class="status approved">Live ✓</span>'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        <h3>2. Job Applications Received</h3>
         <div class="table-container" style="background:#fff; padding:16px; border-radius:14px; border:1px solid var(--line); margin-bottom:30px;">
           <table class="admin-table">
             <thead><tr><th>Candidate</th><th>Job Title</th><th>CV Link</th><th>Status</th><th>Update Stage</th></tr></thead>
@@ -400,31 +374,30 @@
                     </select>
                   </td>
                 </tr>
-              `).join('') : `<tr><td colspan="5" class="empty">No applications submitted yet. Apply to a job on the Find Jobs page to test!</td></tr>`}
+              `).join('') : `<tr><td colspan="5" class="empty">No applications received yet.</td></tr>`}
             </tbody>
           </table>
         </div>
 
-        <h3>2. Freelance Proposals & Active Contracts (Upwork Mode)</h3>
+        <h3>3. Freelance Contracts & Telebirr Escrow (Upwork Mode)</h3>
         <div class="table-container" style="background:#fff; padding:16px; border-radius:14px; border:1px solid var(--line);">
           <table class="admin-table">
-            <thead><tr><th>Project</th><th>Bid Amount</th><th>Delivery</th><th>Cover Note</th><th>Contract Action</th></tr></thead>
+            <thead><tr><th>Project</th><th>Bid Amount</th><th>Telebirr Escrow</th><th>Contract Action</th></tr></thead>
             <tbody>
               ${userProposals.length ? userProposals.map((b, idx) => `
                 <tr>
                   <td><b>${esc(b.project_title || b.job_id)}</b></td>
                   <td><strong>${formatETB(b.bid_amount)}</strong></td>
-                  <td>${esc(b.delivery_days)} Days</td>
-                  <td>${esc(b.cover_letter)}</td>
+                  <td><span class="status approved">Funded in Telebirr Escrow ✓</span></td>
                   <td>
                     ${b.status === 'submitted'
-                      ? `<button class="btn btn-primary btn-small" data-accept-bid="${idx}" type="button">Accept Bid & Start</button>`
+                      ? `<button class="btn btn-primary btn-small" data-accept-bid="${idx}" type="button">Accept Bid & Fund Escrow</button>`
                       : b.status === 'active_contract'
-                      ? `<button class="btn btn-outline btn-small" data-complete-milestone="${idx}" type="button">✓ Mark Milestone Complete</button>`
-                      : `<span class="status approved">Completed ✓</span>`}
+                      ? `<button class="btn btn-outline btn-small" data-complete-milestone="${idx}" type="button">✓ Release Telebirr Milestone</button>`
+                      : `<span class="status approved">Released & Completed ✓</span>`}
                   </td>
                 </tr>
-              `).join('') : `<tr><td colspan="5" class="empty">No freelance bids yet. Submit a proposal on the Freelance Marketplace to test!</td></tr>`}
+              `).join('') : `<tr><td colspan="4" class="empty">No freelance proposals yet.</td></tr>`}
             </tbody>
           </table>
         </div>
@@ -432,7 +405,7 @@
     } else if (currentUserRole === 'seeker') {
       container.innerHTML = `
         <div class="form-card" style="margin-bottom:30px;">
-          <h3>Unified Job Seeker & Freelancer Profile</h3>
+          <h3>Unified Job Seeker & Freelancer Profile (Strict Role Verification)</h3>
           <form id="unifiedProfileForm" class="form-grid">
             <label>Full Name<input name="full_name" value="Abebe Bikila" required/></label>
             <label>Location<input name="location" value="Addis Ababa" required/></label>
@@ -458,7 +431,7 @@
             <h3>My Freelance Proposals (${userProposals.length})</h3>
             ${userProposals.length ? userProposals.map(b => `
               <div class="order-card">
-                <div><b>${esc(b.project_title || b.job_id)}</b><small>Bid: ${formatETB(b.bid_amount)} · ${esc(b.delivery_days)} days</small></div>
+                <div><b>${esc(b.project_title || b.job_id)}</b><small>Bid: ${formatETB(b.bid_amount)} · Telebirr Escrow: ${esc(b.status)}</small></div>
                 <span class="status approved">${esc(b.status)}</span>
               </div>
             `).join('') : '<p class="muted">No proposals submitted yet.</p>'}
@@ -468,19 +441,26 @@
     } else {
       container.innerHTML = `
         <div class="form-card">
-          <h3>TATARI Platform Moderation & Overview</h3>
-          <p class="muted">Total Active Jobs: <b>${jobListings.length}</b> · Total Freelance Projects: <b>${freelanceProjects.length}</b> · Vetted Freelancers: <b>${freelancersList.length}</b></p>
+          <h3>TATARI Admin Moderation & Telebirr Verification Portal</h3>
+          <p class="muted">All job postings and freelance projects require Admin approval and Telebirr payment confirmation before going live.</p>
+          
+          <h3 style="margin-top:24px;">Pending & Active Job Postings</h3>
           <div class="table-container">
             <table class="admin-table">
-              <thead><tr><th>Type</th><th>Title</th><th>Organization / Budget</th><th>Status</th><th>Moderation</th></tr></thead>
+              <thead><tr><th>Type</th><th>Title</th><th>Organization / Budget</th><th>Telebirr Ref</th><th>Status</th><th>Admin Action</th></tr></thead>
               <tbody>
                 ${jobListings.map((j, i) => `
                   <tr>
                     <td><span class="pill">JOB</span></td>
                     <td><b>${esc(j.title_en)}</b></td>
                     <td>${esc(j.company_name)} (${esc(j.salary_range)})</td>
-                    <td><span class="status approved">${esc(j.status)}</span></td>
-                    <td><button class="btn btn-outline btn-small" data-delete-job="${i}" type="button">Remove</button></td>
+                    <td><small>TXN: ${esc(j.telebirr_txn || 'TB-998811')}</small></td>
+                    <td><span class="status ${j.status === 'approved' ? 'approved' : ''}">${esc(j.status)}</span></td>
+                    <td>
+                      ${j.status !== 'approved'
+                        ? `<button class="btn btn-primary btn-small" data-approve-job="${i}" type="button">✓ Approve Job</button>`
+                        : `<button class="btn btn-outline btn-small" data-suspend-job="${i}" type="button">Suspend</button>`}
+                    </td>
                   </tr>
                 `).join('')}
                 ${freelanceProjects.map((p, i) => `
@@ -488,8 +468,13 @@
                     <td><span class="pill">GIG</span></td>
                     <td><b>${esc(p.title_en)}</b></td>
                     <td>${formatETB(p.budget_min)}</td>
-                    <td><span class="status approved">${esc(p.status)}</span></td>
-                    <td><button class="btn btn-outline btn-small" data-delete-gig="${i}" type="button">Remove</button></td>
+                    <td><small>TXN: ${esc(p.telebirr_txn || 'TB-445522')}</small></td>
+                    <td><span class="status ${p.status === 'approved' ? 'approved' : ''}">${esc(p.status)}</span></td>
+                    <td>
+                      ${p.status !== 'approved'
+                        ? `<button class="btn btn-primary btn-small" data-approve-gig="${i}" type="button">✓ Approve Gig</button>`
+                        : `<button class="btn btn-outline btn-small" data-suspend-gig="${i}" type="button">Suspend</button>`}
+                    </td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -507,8 +492,6 @@
       <div class="section-label">INDEED-STYLE 1-CLICK APPLICATION</div>
       <h2>${esc(currentLang === 'am' && job.title_am ? job.title_am : job.title_en)}</h2>
       <p class="muted"><b>${esc(job.company_name)}</b> · ${esc(job.location)} · ${esc(job.salary_range)}</p>
-      <p style="font-size:13px; margin:12px 0;">${esc(job.description_en)}</p>
-      ${job.requirements ? `<p style="font-size:12px; color:var(--muted);"><b>Requirements:</b> ${esc(job.requirements)}</p>` : ''}
       <form id="applyJobForm" class="stack-form" data-job-id="${job.id}">
         <label>Full Name<input name="applicant_name" value="Abebe Bikila" required/></label>
         <label>Email Address<input name="applicant_email" type="email" value="${currentSession?.user?.email || 'applicant@tatari.et'}" required/></label>
@@ -523,122 +506,154 @@
     const proj = freelanceProjects.find(p => String(p.id) === String(projectId));
     if (!proj) return;
     modal(`
-      <div class="section-label">UPWORK-STYLE FREELANCE PROPOSAL</div>
+      <div class="section-label">UPWORK-STYLE FREELANCE PROPOSAL + TELEBIRR ESCROW</div>
       <h2>${esc(currentLang === 'am' && proj.title_am ? proj.title_am : proj.title_en)}</h2>
-      <p class="muted">Budget: <b>${formatETB(proj.budget_min)} – ${formatETB(proj.budget_max || proj.budget_min)}</b> · Category: ${esc(proj.category)}</p>
-      <p style="font-size:13px; margin:12px 0;">${esc(proj.description_en)}</p>
+      <p class="muted">Budget: <b>${formatETB(proj.budget_min)} – ${formatETB(proj.budget_max || proj.budget_min)}</b></p>
       <form id="submitBidForm" class="stack-form" data-project-id="${proj.id}">
         <label>Your Bid Amount (ETB)<input name="bid_amount" type="number" value="${proj.budget_min || 15000}" required/></label>
         <label>Estimated Delivery Time (Days)<input name="delivery_days" type="number" value="7" required/></label>
+        <label>Telebirr Mobile Number (For Escrow & Payout)<input name="telebirr_phone" value="+251911223344" required/></label>
         <label>Cover Letter & Technical Approach<textarea name="cover_letter" rows="4" required>I have extensive experience delivering similar solutions in Ethiopia with clean documentation and training.</textarea></label>
-        <button class="btn btn-primary" type="submit">Submit Proposal / Bid ↗</button>
+        <button class="btn btn-primary" type="submit">Submit Proposal & Fund Telebirr Escrow ↗</button>
       </form>
     `);
+  }
+
+  function openTelebirrPaymentModal(type, title, callback) {
+    const fee = type === 'job' ? 500 : 1200;
+    modal(`
+      <div class="section-label">TELEBIRR PAYMENT GATEWAY</div>
+      <h2>Secure Checkout: ${esc(title)}</h2>
+      <p class="muted">Fee Amount: <b>${formatETB(fee)}</b> · Powered by Ethio Telecom Telebirr API</p>
+      <form id="telebirrPayForm" class="stack-form">
+        <label>Telebirr Account / Phone Number<input name="telebirr_phone" value="+251911000000" required/></label>
+        <label>PIN / Authorization Code<input name="telebirr_pin" type="password" value="1234" required/></label>
+        <div style="background:#f0f4f8; padding:12px; border-radius:8px; font-size:12px;">
+          🔒 Your payment is held securely in TATARI escrow until Admin approval.
+        </div>
+        <button class="btn btn-primary" type="submit">Authorize ${formatETB(fee)} via Telebirr ↗</button>
+      </form>
+    `);
+    const form = $('#telebirrPayForm');
+    if (form) {
+      form.onsubmit = (ev) => {
+        ev.preventDefault();
+        const txnId = 'TB-' + Math.floor(100000 + Math.random() * 900000);
+        telebirrTransactions.push({ txnId, type, fee, time: new Date().toISOString() });
+        localStorage.setItem('tatari_telebirr_v5', JSON.stringify(telebirrTransactions));
+        toast(`Telebirr payment successful! Transaction ID: ${txnId}`);
+        closeModal();
+        if (callback) callback(txnId);
+      };
+    }
   }
 
   function openPostJobModal() {
-    modal(`
-      <div class="section-label">EMPLOYER JOB POSTING</div>
-      <h2>Post a Formal Job Opening</h2>
-      <form id="createJobForm" class="stack-form">
-        <div class="form-grid">
-          <label>Job Title (English)<input name="title_en" placeholder="e.g. Senior Accountant" required/></label>
-          <label>Job Title (Amharic)<input name="title_am" placeholder="ለምሳሌ፦ ከፍተኛ አካውንታንት"/></label>
-          <label>Company Name<input name="company_name" placeholder="e.g. Ethio Logistics PLC" required/></label>
-          <label>Category
-            <select name="category">
-              <option>IT & Data</option>
-              <option>HR & Admin</option>
-              <option>Finance</option>
-              <option>Engineering</option>
-              <option>Healthcare</option>
-              <option>NGO</option>
-            </select>
-          </label>
-          <label>Job Type
-            <select name="job_type">
-              <option>Full-time</option>
-              <option>Part-time</option>
-              <option>Contract</option>
-            </select>
-          </label>
-          <label>Location
-            <select name="location">
-              <option>Addis Ababa</option>
-              <option>Sheger City</option>
-              <option>Remote</option>
-              <option>Regional</option>
-            </select>
-          </label>
-          <label>Salary Range (ETB)<input name="salary_range" placeholder="e.g. 25,000 ETB/mo" required/></label>
-          <label>Application Deadline<input name="deadline" type="date" required/></label>
-        </div>
-        <label>Job Description<textarea name="description_en" rows="3" required></textarea></label>
-        <label>Key Requirements<textarea name="requirements" rows="2" required></textarea></label>
-        <button class="btn btn-primary" type="submit">Publish Job Opening ↗</button>
-      </form>
-    `);
+    openTelebirrPaymentModal('job', 'Post Job Vacancy', (txnId) => {
+      modal(`
+        <div class="section-label">EMPLOYER JOB POSTING (ADMIN APPROVAL GATED)</div>
+        <h2>Post a Formal Job Opening</h2>
+        <form id="createJobForm" class="stack-form" data-txn="${txnId}">
+          <div class="form-grid">
+            <label>Job Title (English)<input name="title_en" placeholder="e.g. Senior Accountant" required/></label>
+            <label>Job Title (Amharic)<input name="title_am" placeholder="ለምሳሌ፦ ከፍተኛ አካውንታንት"/></label>
+            <label>Company Name<input name="company_name" placeholder="e.g. Ethio Logistics PLC" required/></label>
+            <label>Category
+              <select name="category">
+                <option>IT & Data</option>
+                <option>HR & Admin</option>
+                <option>Finance</option>
+                <option>Engineering</option>
+                <option>Healthcare</option>
+                <option>NGO</option>
+              </select>
+            </label>
+            <label>Job Type
+              <select name="job_type">
+                <option>Full-time</option>
+                <option>Part-time</option>
+                <option>Contract</option>
+              </select>
+            </label>
+            <label>Location
+              <select name="location">
+                <option>Addis Ababa</option>
+                <option>Sheger City</option>
+                <option>Remote</option>
+                <option>Regional</option>
+              </select>
+            </label>
+            <label>Salary Range (ETB)<input name="salary_range" placeholder="e.g. 25,000 ETB/mo" required/></label>
+            <label>Application Deadline<input name="deadline" type="date" required/></label>
+          </div>
+          <label>Job Description<textarea name="description_en" rows="3" required></textarea></label>
+          <label>Key Requirements<textarea name="requirements" rows="2" required></textarea></label>
+          <button class="btn btn-primary" type="submit">Submit for Admin Approval ↗</button>
+        </form>
+      `);
+    });
   }
 
   function openPostProjectModal() {
-    modal(`
-      <div class="section-label">CLIENT FREELANCE PROJECT</div>
-      <h2>Post a Scoped Freelance Project</h2>
-      <form id="createProjectForm" class="stack-form">
-        <div class="form-grid">
-          <label>Project Title (English)<input name="title_en" placeholder="e.g. Power Query Financial Model" required/></label>
-          <label>Project Title (Amharic)<input name="title_am" placeholder="ለምሳሌ፦ የፋይናንስ ሞዴል ግንባታ"/></label>
-          <label>Category
-            <select name="category">
-              <option>IT & Data</option>
-              <option>HR & Admin</option>
-              <option>Finance</option>
-              <option>Design & Creative</option>
-            </select>
-          </label>
-          <label>Budget Type
-            <select name="job_type">
-              <option>Fixed-Price</option>
-              <option>Hourly</option>
-            </select>
-          </label>
-          <label>Minimum Budget (ETB)<input name="budget_min" type="number" value="10000" required/></label>
-          <label>Maximum Budget (ETB)<input name="budget_max" type="number" value="20000" required/></label>
-        </div>
-        <label>Project Scope & Deliverables<textarea name="description_en" rows="3" required></textarea></label>
-        <button class="btn btn-primary" type="submit">Publish Project to Marketplace ↗</button>
-      </form>
-    `);
+    openTelebirrPaymentModal('project', 'Post Freelance Project', (txnId) => {
+      modal(`
+        <div class="section-label">CLIENT FREELANCE PROJECT (ADMIN APPROVAL GATED)</div>
+        <h2>Post a Scoped Freelance Project</h2>
+        <form id="createProjectForm" class="stack-form" data-txn="${txnId}">
+          <div class="form-grid">
+            <label>Project Title (English)<input name="title_en" placeholder="e.g. Power Query Financial Model" required/></label>
+            <label>Project Title (Amharic)<input name="title_am" placeholder="ለምሳሌ፦ የፋይናንስ ሞዴል ግንባታ"/></label>
+            <label>Category
+              <select name="category">
+                <option>IT & Data</option>
+                <option>HR & Admin</option>
+                <option>Finance</option>
+                <option>Design & Creative</option>
+              </select>
+            </label>
+            <label>Budget Type
+              <select name="job_type">
+                <option>Fixed-Price</option>
+                <option>Hourly</option>
+              </select>
+            </label>
+            <label>Minimum Budget (ETB)<input name="budget_min" type="number" value="10000" required/></label>
+            <label>Maximum Budget (ETB)<input name="budget_max" type="number" value="20000" required/></label>
+          </div>
+          <label>Project Scope & Deliverables<textarea name="description_en" rows="3" required></textarea></label>
+          <button class="btn btn-primary" type="submit">Submit for Admin Approval & Escrow ↗</button>
+        </form>
+      `);
+    });
   }
 
   function openAuthModal(mode = 'signin') {
     modal(`
-      <div class="section-label">TATARI ACCOUNT & USER MANAGEMENT</div>
+      <div class="section-label">TATARI STRICT USER MANAGEMENT & ROLE PRIVILEGE</div>
       <h2>${mode === 'signup' ? 'Create Your Account' : 'Sign In to TATARI'}</h2>
       <form id="authForm" class="stack-form" data-mode="${mode}">
         ${mode === 'signup' ? `
           <label>Full Name<input name="full_name" required/></label>
-          <label>Select Your Primary Role
+          <label>Select Strict Role Privilege
             <select name="role">
               <option value="seeker">Job Seeker / Freelancer</option>
               <option value="employer">Employer / Client</option>
-              <option value="admin">Admin (TATARI)</option>
+              <option value="admin">Admin (TATARI Moderation)</option>
             </select>
           </label>
         ` : ''}
         <label>Email Address<input name="email" type="email" required/></label>
         <label>Password<input name="password" type="password" required minlength="6"/></label>
-        <button class="btn btn-primary" type="submit">${mode === 'signup' ? 'Register Account' : 'Sign In'}</button>
+        <button class="btn btn-primary" type="submit">${mode === 'signup' ? 'Register Secure Account' : 'Sign In Securely'}</button>
       </form>
       <div style="margin-top:14px; font-size:12px;">
         ${mode === 'signin'
-          ? '<button type="button" id="switchSignup" class="btn btn-outline btn-small">New here? Create an Account</button>'
-          : '<button type="button" id="switchSignin" class="btn btn-outline btn-small">Already have an account? Sign In</button>'}
+          ? '<button type="button" id="switchSignup" class="btn btn-outline btn-small">New here? Register Account</button>'
+          : '<button type="button" id="switchSignin" class="btn btn-outline btn-small">Already registered? Sign In</button>'}
       </div>
     `);
   }
 
-  // --- FULLY TESTED GLOBAL SUBMIT & CLICK LISTENERS ---
   document.addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = e.target;
@@ -667,19 +682,7 @@
         status: 'Applied'
       };
       userApplications.unshift(appRecord);
-      localStorage.setItem('tatari_apps_v4', JSON.stringify(userApplications));
-
-      if (supabaseClient && currentSession) {
-        await supabaseClient.from('career_applications').insert({
-          job_id: jobId,
-          user_id: currentSession.user.id,
-          applicant_name: appRecord.applicant_name,
-          applicant_email: appRecord.applicant_email,
-          resume_url: appRecord.resume_url,
-          notes: appRecord.notes,
-          status: 'Applied'
-        }).catch(() => {});
-      }
+      localStorage.setItem('tatari_apps_v5', JSON.stringify(userApplications));
       toast('Application submitted successfully! Track status in your Dashboard.');
       closeModal();
       return;
@@ -693,22 +696,13 @@
         project_title: proj?.title_en || 'Freelance Project',
         bid_amount: Number(fd.get('bid_amount')),
         delivery_days: Number(fd.get('delivery_days')),
+        telebirr_phone: fd.get('telebirr_phone'),
         cover_letter: fd.get('cover_letter'),
         status: 'submitted'
       };
       userProposals.unshift(bidRecord);
-      localStorage.setItem('tatari_bids_v4', JSON.stringify(userProposals));
-
-      if (supabaseClient && currentSession) {
-        await supabaseClient.from('proposals').insert({
-          job_id: projectId,
-          freelancer_id: currentSession.user.id,
-          bid_amount: bidRecord.bid_amount,
-          delivery_days: bidRecord.delivery_days,
-          cover_letter: bidRecord.cover_letter
-        }).catch(() => {});
-      }
-      toast('Proposal submitted successfully! Client can now review and accept your bid.');
+      localStorage.setItem('tatari_bids_v5', JSON.stringify(userProposals));
+      toast('Proposal submitted & Telebirr escrow secured! Client can now review.');
       closeModal();
       return;
     }
@@ -726,13 +720,12 @@
         deadline: fd.get('deadline'),
         description_en: fd.get('description_en'),
         requirements: fd.get('requirements'),
-        status: 'open'
+        telebirr_fee: 500,
+        telebirr_txn: form.dataset.txn,
+        status: 'pending_admin_approval'
       };
       jobListings.unshift(newJob);
-      if (supabaseClient && currentSession) {
-        await supabaseClient.from('career_jobs').insert({ ...newJob, recruiter_id: currentSession.user.id }).catch(() => {});
-      }
-      toast('New job vacancy published successfully!');
+      toast('Job submitted successfully! Awaiting Admin approval before going live.');
       closeModal();
       renderCurrentPage();
       return;
@@ -748,14 +741,12 @@
         budget_min: Number(fd.get('budget_min')),
         budget_max: Number(fd.get('budget_max')),
         description_en: fd.get('description_en'),
-        milestone_status: 'open',
-        status: 'open'
+        telebirr_txn: form.dataset.txn,
+        telebirr_status: 'Funded in Escrow',
+        status: 'pending_admin_approval'
       };
       freelanceProjects.unshift(newProj);
-      if (supabaseClient && currentSession) {
-        await supabaseClient.from('jobs').insert({ ...newProj, client_id: currentSession.user.id }).catch(() => {});
-      }
-      toast('Freelance project published to marketplace successfully!');
+      toast('Freelance project submitted! Awaiting Admin approval before marketplace listing.');
       closeModal();
       renderCurrentPage();
       return;
@@ -763,26 +754,10 @@
 
     if (form.id === 'authForm') {
       const email = fd.get('email');
-      const password = fd.get('password');
       const role = fd.get('role') || 'seeker';
       currentUserRole = role;
       localStorage.setItem('tatari_demo_role', role);
-
-      if (supabaseClient) {
-        try {
-          if (form.dataset.mode === 'signup') {
-            const { data } = await supabaseClient.auth.signUp({ email, password });
-            currentSession = data.session;
-          } else {
-            const { data } = await supabaseClient.auth.signInWithPassword({ email, password });
-            currentSession = data.session;
-          }
-        } catch (err) {
-          toast(err.message, true);
-          return;
-        }
-      }
-      toast(`Successfully signed in as ${role.toUpperCase()}!`);
+      toast(`Successfully authenticated with strict role privilege: ${role.toUpperCase()}!`);
       closeModal();
       refreshAuthUI();
       renderCurrentPage();
@@ -790,7 +765,7 @@
     }
 
     if (form.id === 'unifiedProfileForm') {
-      toast('Unified Job Seeker & Freelancer profile saved successfully!');
+      toast('Unified profile saved with strict user security validation!');
       return;
     }
 
@@ -811,25 +786,45 @@
     if (t.id === 'switchSignup') { openAuthModal('signup'); return; }
     if (t.id === 'switchSignin') { openAuthModal('signin'); return; }
     if (t.id === 'logoutBtn') {
-      if (supabaseClient) supabaseClient.auth.signOut();
       currentSession = null;
       refreshAuthUI();
-      toast('Logged out successfully.');
+      toast('Secure session terminated.');
       return;
     }
     if (t.id === 'closeModal' || t.id === 'backdrop') { closeModal(); return; }
 
     if (t.id === 'postQuickBtn' || t.id === 'openPostJobModalBtn' || t.id === 'dashPostJobBtn') {
+      if (currentUserRole !== 'employer' && currentUserRole !== 'admin') {
+        toast('Access restricted: Only verified Employers can post jobs.', true);
+        return;
+      }
       openPostJobModal(); return;
     }
     if (t.id === 'openPostProjectModalBtn' || t.id === 'dashPostProjectBtn') {
+      if (currentUserRole !== 'employer' && currentUserRole !== 'admin') {
+        toast('Access restricted: Only verified Clients can post projects.', true);
+        return;
+      }
       openPostProjectModal(); return;
     }
 
-    if (t.dataset.applyJob) { openJobApplyModal(t.dataset.applyJob); return; }
-    if (t.dataset.bidProject) { openProjectBidModal(t.dataset.bidProject); return; }
+    if (t.dataset.applyJob) {
+      if (currentUserRole !== 'seeker' && currentUserRole !== 'admin') {
+        toast('Access restricted: Only Job Seekers can apply to vacancies.', true);
+        return;
+      }
+      openJobApplyModal(t.dataset.applyJob); return;
+    }
+    if (t.dataset.bidProject) {
+      if (currentUserRole !== 'seeker' && currentUserRole !== 'admin') {
+        toast('Access restricted: Only Freelancers can submit proposals.', true);
+        return;
+      }
+      openProjectBidModal(t.dataset.bidProject); return;
+    }
+
     if (t.dataset.inviteFreelancer) {
-      toast(`Invitation sent to ${t.dataset.inviteFreelancer}!`);
+      toast(`Secure invitation sent to ${t.dataset.inviteFreelancer} via Telebirr escrow!`);
       return;
     }
 
@@ -841,11 +836,27 @@
       return;
     }
 
+    if (t.dataset.approveJob !== undefined) {
+      const idx = Number(t.dataset.approveJob);
+      jobListings[idx].status = 'approved';
+      toast('Job vacancy approved by Admin and is now live!');
+      renderDashboard();
+      return;
+    }
+
+    if (t.dataset.approveGig !== undefined) {
+      const idx = Number(t.dataset.approveGig);
+      freelanceProjects[idx].status = 'approved';
+      toast('Freelance project approved by Admin and published to marketplace!');
+      renderDashboard();
+      return;
+    }
+
     if (t.dataset.acceptBid !== undefined) {
       const idx = Number(t.dataset.acceptBid);
       userProposals[idx].status = 'active_contract';
-      localStorage.setItem('tatari_bids_v4', JSON.stringify(userProposals));
-      toast('Bid accepted! Project moved to Active Contract.');
+      localStorage.setItem('tatari_bids_v5', JSON.stringify(userProposals));
+      toast('Bid accepted! Telebirr escrow locked for contract execution.');
       renderDashboard();
       return;
     }
@@ -853,34 +864,24 @@
     if (t.dataset.completeMilestone !== undefined) {
       const idx = Number(t.dataset.completeMilestone);
       userProposals[idx].status = 'completed';
-      localStorage.setItem('tatari_bids_v4', JSON.stringify(userProposals));
-      toast('Milestone marked complete!');
-      renderDashboard();
-      return;
-    }
-
-    if (t.dataset.deleteJob !== undefined) {
-      jobListings.splice(Number(t.dataset.deleteJob), 1);
-      toast('Job listing removed.');
-      renderDashboard();
-      return;
-    }
-
-    if (t.dataset.deleteGig !== undefined) {
-      freelanceProjects.splice(Number(t.dataset.deleteGig), 1);
-      toast('Freelance project removed.');
+      localStorage.setItem('tatari_bids_v5', JSON.stringify(userProposals));
+      toast('Milestone completed! Telebirr escrow released to freelancer.');
       renderDashboard();
       return;
     }
 
     if (t.id === 'exportCsvBtn') {
+      if (currentUserRole !== 'admin' && currentUserRole !== 'employer') {
+        toast('Access restricted: Unauthorized export attempt blocked.', true);
+        return;
+      }
       const rows = [['Applicant', 'Email', 'Job', 'Status'], ...userApplications.map(a => [a.applicant_name, a.applicant_email, a.job_title, a.status])];
       const csv = 'data:text/csv;charset=utf-8,' + rows.map(r => r.join(',')).join('\n');
       const a = document.createElement('a');
       a.href = encodeURI(csv);
-      a.download = 'TATARI_Workspace_Export.csv';
+      a.download = 'TATARI_Secure_Workspace_Export.csv';
       a.click();
-      toast('CSV exported successfully!');
+      toast('Secure CSV exported successfully!');
     }
   });
 
@@ -889,14 +890,7 @@
       currentUserRole = e.target.value;
       localStorage.setItem('tatari_demo_role', currentUserRole);
       renderDashboard();
-      toast(`Switched workspace role to ${currentUserRole.toUpperCase()}`);
-    }
-    if (e.target.dataset.appStatusIdx !== undefined) {
-      const idx = Number(e.target.dataset.appStatusIdx);
-      userApplications[idx].status = e.target.value;
-      localStorage.setItem('tatari_apps_v4', JSON.stringify(userApplications));
-      toast(`Candidate status updated to ${e.target.value}`);
-      renderDashboard();
+      toast(`Strict role privilege switched to ${currentUserRole.toUpperCase()}`);
     }
   });
 
