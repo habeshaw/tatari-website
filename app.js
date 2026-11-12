@@ -83,9 +83,9 @@
     }
   ];
 
-  let userApplications = JSON.parse(localStorage.getItem('tatari_apps_v6') || '[]');
-  let userProposals = JSON.parse(localStorage.getItem('tatari_bids_v6') || '[]');
-  let telebirrTransactions = JSON.parse(localStorage.getItem('tatari_telebirr_v6') || '[]');
+  let userApplications = JSON.parse(localStorage.getItem('tatari_apps_v7') || '[]');
+  let userProposals = JSON.parse(localStorage.getItem('tatari_bids_v7') || '[]');
+  let telebirrTransactions = JSON.parse(localStorage.getItem('tatari_telebirr_v7') || '[]');
 
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const formatETB = n => `ETB ${Number(n || 0).toLocaleString('en-US')}`;
@@ -175,9 +175,8 @@
   function renderHomePreview() {
     const grid = $('#homeLivePreviewGrid');
     if (!grid) return;
-    const approvedJobs = jobListings.filter(j => j.status === 'approved').slice(0, 2);
-    const approvedGigs = freelanceProjects.filter(p => p.status === 'approved').slice(0, 2);
-    grid.innerHTML = approvedJobs.map(j => renderJobCard(j)).join('') + approvedGigs.map(p => renderProjectCard(p)).join('');
+    const approvedJobs = jobListings.filter(j => j.status === 'approved').slice(0, 3);
+    grid.innerHTML = approvedJobs.map(j => renderJobCard(j)).join('');
   }
 
   function renderJobsBoard() {
@@ -305,7 +304,7 @@
     return `
       <article class="resource-card">
         <div class="resource-art job">
-          <span>${currentLang === 'am' ? 'የፍሪላንስ ፕሮጀክት' : 'FREELANCE GIG'} · ${esc(p.job_type)}</span>
+          <span>${currentLang === 'am' ? 'የፍሪላንስ ፕሮጀክት' : 'FREELANCE PROJECT'} · ${esc(p.job_type)}</span>
           <b>💼</b>
         </div>
         <div class="resource-body">
@@ -500,7 +499,7 @@
     const job = jobListings.find(j => String(j.id) === String(jobId));
     if (!job) return;
     modal(`
-      <div class="section-label">INDEED-STYLE 1-CLICK APPLICATION</div>
+      <div class="section-label">DIRECT JOB APPLICATION</div>
       <h2>${esc(currentLang === 'am' && job.title_am ? job.title_am : job.title_en)}</h2>
       <p class="muted"><b>${esc(job.company_name)}</b> · ${esc(job.location)} · ${esc(job.salary_range)}</p>
       <form id="applyJobForm" class="stack-form" data-job-id="${job.id}">
@@ -517,7 +516,7 @@
     const proj = freelanceProjects.find(p => String(p.id) === String(projectId));
     if (!proj) return;
     modal(`
-      <div class="section-label">UPWORK-STYLE FREELANCE PROPOSAL + TELEBIRR ESCROW</div>
+      <div class="section-label">FREELANCE PROPOSAL + TELEBIRR ESCROW</div>
       <h2>${esc(currentLang === 'am' && proj.title_am ? proj.title_am : proj.title_en)}</h2>
       <p class="muted">Budget: <b>${formatETB(proj.budget_min)} – ${formatETB(proj.budget_max || proj.budget_min)}</b></p>
       <form id="submitBidForm" class="stack-form" data-project-id="${proj.id}">
@@ -551,7 +550,7 @@
         ev.preventDefault();
         const txnId = 'TB-' + Math.floor(100000 + Math.random() * 900000);
         telebirrTransactions.push({ txnId, type, fee, time: new Date().toISOString() });
-        localStorage.setItem('tatari_telebirr_v6', JSON.stringify(telebirrTransactions));
+        localStorage.setItem('tatari_telebirr_v7', JSON.stringify(telebirrTransactions));
         toast(`Telebirr payment successful! Transaction ID: ${txnId}`);
         closeModal();
         if (callback) callback(txnId);
@@ -695,7 +694,7 @@
         status: 'Applied'
       };
       userApplications.unshift(appRecord);
-      localStorage.setItem('tatari_apps_v6', JSON.stringify(userApplications));
+      localStorage.setItem('tatari_apps_v7', JSON.stringify(userApplications));
       toast('Application submitted successfully! Track status in your Dashboard.');
       closeModal();
       return;
@@ -714,7 +713,7 @@
         status: 'submitted'
       };
       userProposals.unshift(bidRecord);
-      localStorage.setItem('tatari_bids_v6', JSON.stringify(userProposals));
+      localStorage.setItem('tatari_bids_v7', JSON.stringify(userProposals));
       toast('Proposal submitted & Telebirr escrow secured! Client can now review.');
       closeModal();
       return;
@@ -878,7 +877,7 @@
     if (t.dataset.acceptBid !== undefined) {
       const idx = Number(t.dataset.acceptBid);
       userProposals[idx].status = 'active_contract';
-      localStorage.setItem('tatari_bids_v6', JSON.stringify(userProposals));
+      localStorage.setItem('tatari_bids_v7', JSON.stringify(userProposals));
       toast('Bid accepted! Telebirr escrow locked for contract execution.');
       renderDashboard();
       return;
@@ -887,7 +886,7 @@
     if (t.dataset.completeMilestone !== undefined) {
       const idx = Number(t.dataset.completeMilestone);
       userProposals[idx].status = 'completed';
-      localStorage.setItem('tatari_bids_v6', JSON.stringify(userProposals));
+      localStorage.setItem('tatari_bids_v7', JSON.stringify(userProposals));
       toast('Milestone completed! Telebirr escrow released to freelancer.');
       renderDashboard();
       return;
